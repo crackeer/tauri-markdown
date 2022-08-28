@@ -1,16 +1,5 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.app {
+  display: flex;
 }
 
 .App-header {
@@ -35,4 +24,16 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.app .bytemd {
+  height: 100vh;
+}
+
+.app ul {
+  height: auto;
+}
+#list {
+  height: '100%';
+  overflow: hidden;
 }
