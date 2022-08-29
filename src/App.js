@@ -3,15 +3,17 @@ import './App.css';
 import { Editor, Viewer } from '@bytemd/react'
 import gfm from '@bytemd/plugin-gfm'
 import React from 'react';
+import "@arco-design/web-react/dist/css/arco.css";
 import { Treebeard } from 'react-treebeard';
 import { invoke } from '@tauri-apps/api/tauri'
 import lodash, { includes } from 'lodash';
 import { listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/api/dialog';
 import { desktopDir } from '@tauri-apps/api/path';
-// listen to the `click` event and get a function to remove the event listener
-// there's also a `once` function that subscribes to an event and automatically unsubscribes the listener on the first event
-
+import { Layout, Tree } from '@arco-design/web-react';
+const Sider = Layout.Sider;
+const Content = Layout.Content;
+const TreeNode = Tree.Node;
 
 const plugins = [
     gfm(),
@@ -23,7 +25,7 @@ class App extends React.Component {
         this.state = {
             value: '',
             files: [],
-            treeData: {},
+            treeData: [],
             dir: "",
             cursor: null,
         }
@@ -38,7 +40,7 @@ class App extends React.Component {
             defaultPath: '',
         });
         await this.setState({
-            dir : selected,
+            dir: selected,
         })
         await this.loadDir(selected)
     }
@@ -48,7 +50,7 @@ class App extends React.Component {
         })
 
         await this.setState({
-            treeData: this.fmt2TreeData(data),
+            treeData: [this.fmt2TreeData(data)],
         })
     }
     getContent = async (name) => {
@@ -63,7 +65,9 @@ class App extends React.Component {
     fmt2TreeData = (data) => {
         let mapData = {
             name: this.state.dir,
+            title: this.state.dir,
             toggled: true,
+            key: this.state.dir,
             children: []
         }
         let prefixLength = this.state.dir.length + 1
@@ -83,7 +87,8 @@ class App extends React.Component {
         if (parts.length == 1) {
             retData.children.push({
                 name: parts[0],
-                dir: uriPrefix + '\\' + parts[0],
+                title: parts[0],
+                key: uriPrefix + '\\' + parts[0],
                 type: 'file',
             })
         } else {
@@ -96,6 +101,8 @@ class App extends React.Component {
             if (index < 0) {
                 retData.children.push({
                     name: parts[0],
+                    title: parts[0],
+                    key: uriPrefix + '\\' + parts[0],
                     children: [],
                     toggled: level == 0 ? true : false
                 })
@@ -124,7 +131,13 @@ class App extends React.Component {
         }
 
     }
-    onSelect = async (node) => {
+    onSelect = async (node, value) => {
+        console.log(node, node[0].substr(node[0].length - 3, 3))
+        if (node[0].substr(node[0].length - 3, 3) == '.md') {
+            await this.getContent(node[0])
+        }
+        //
+        /*
         const { cursor, treeData } = this.state;
 
         if (cursor) {
@@ -144,33 +157,40 @@ class App extends React.Component {
         await this.setState({ cursor: node, treeData: Object.assign({}, treeData) });
         console.log(node, node.dir)
         await this.getContent(node.dir)
+        */
     }
 
     render() {
         return (
             <div className="app">
-                <div id="list" style={{ width: '20%', height: '100%', overflow: 'scroll' }}>
-                    <Treebeard
-                        data={this.state.treeData}
-                        onToggle={this.onToggle}
-                        onSelect={this.onSelect}
-                    />
-                </div>
-                <div style={{ width: '80%' }}>
-                    <Editor
-                        value={this.state.value}
-                        plugins={plugins}
-                        onChange={(v) => {
-                            this.setState({
-                                value: v
-                            })
-                        }}
+                <Layout>
+                    <Sider
+                        resizeDirections={['right']}
                         style={{
-                            height: '100%'
+                            minWidth: 180,
+                            maxWidth: 300,
+                            height: '100vh',
+                            overflow: 'scroll'
                         }}
-                    />
-                </div>
-
+                        size="small"
+                    >
+                        <Tree defaultSelectedKeys={['0-0-1']} treeData={this.state.treeData} onSelect={this.onSelect}></Tree>
+                    </Sider>
+                    <Content>
+                        <Editor
+                            value={this.state.value}
+                            plugins={plugins}
+                            onChange={(v) => {
+                                this.setState({
+                                    value: v
+                                })
+                            }}
+                            style={{
+                                height: '100%'
+                            }}
+                        />
+                    </Content>
+                </Layout>
             </div>
         );
     }
