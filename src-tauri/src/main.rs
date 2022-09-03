@@ -14,7 +14,7 @@ use tauri::WindowMenuEvent;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 
 fn main() {
-    let menu = Menu::new().add_item(CustomMenuItem::new("open", "打开"));
+    let menu = Menu::new().add_item(CustomMenuItem::new("open", "打开")).add_item(CustomMenuItem::new("quit", "退出"));
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             my_custom_command,
@@ -76,7 +76,6 @@ fn get_md_list(dir: String) -> Vec<String> {
         }
         cur_index = cur_index + 1;
     }
-    println!("{}", list.join(","));
     list
 }
 

@@ -42,6 +42,8 @@
   },
   "devDependencies": {
     "@bytemd/plugin-gfm": "^1.17.2",
+    "@bytemd/plugin-highlight": "^1.17.2",
+    "@bytemd/plugin-mermaid": "^1.17.2",
     "@bytemd/react": "^1.17.2",
     "@tauri-apps/cli": "^1.0.5",
     "cross-env": "^7.0.3"
