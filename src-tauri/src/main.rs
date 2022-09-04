@@ -6,7 +6,7 @@
 use std::{
     fs::metadata,
     fs::{read_dir, DirEntry, File},
-    io::Read,
+    io::{Read, Write},
     sync::Arc,
     vec,
 };
@@ -20,6 +20,7 @@ fn main() {
             my_custom_command,
             get_md_list,
             get_md_content,
+            write_md,
         ])
         .menu(menu)
         .on_menu_event(window_menu_event)
@@ -42,7 +43,7 @@ fn window_menu_event(event: WindowMenuEvent) {
         }
         "open" => {
             println!("{}", "open a file");
-            event.window().emit("open", ("Open File"));
+            event.window().emit("open", "Open File");
         }
         _ => {}
     }
@@ -85,4 +86,16 @@ fn get_md_content(name: String) -> String {
     let mut content = String::new();
     file_a.read_to_string(&mut content);
     content
+}
+
+#[tauri::command]
+fn write_md(name: String, content: String) -> String{
+
+    let res = File::create(name);
+    if res.is_err() {
+        return res.err().unwrap().to_string();
+    }
+    let mut buffer = res.unwrap();
+    buffer.write(content.as_bytes());
+    String::from("ok")
 }

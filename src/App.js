@@ -1,6 +1,6 @@
 import 'bytemd/dist/index.css'
 import './App.css';
-import { Editor, Viewer } from '@bytemd/react'
+import { Editor } from '@bytemd/react'
 import gfm from '@bytemd/plugin-gfm'
 import highlight from '@bytemd/plugin-highlight';
 import mermaid from '@bytemd/plugin-mermaid';
@@ -9,7 +9,8 @@ import "@arco-design/web-react/dist/css/arco.css";
 import { invoke, convertFileSrc } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/api/dialog';
-import { desktopDir, join } from '@tauri-apps/api/path';
+import { desktopDir, join, basename } from '@tauri-apps/api/path';
+import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
 import { Layout, Tree, Button } from '@arco-design/web-react';
 const Sider = Layout.Sider;
 const Content = Layout.Content;
@@ -26,41 +27,34 @@ class App extends React.Component {
         super(props); // 用于父子组件传值
         this.state = {
             value: '',
-            files: [],
             treeData: [],
             dir: "",
             cursor: null,
+            activeFile: '',
+            changed: false,
         }
     }
-    async componentDidMount() {
-        var fet = Object.getOwnPropertyDescriptor(Image.prototype, 'onload')
-        console.log(fet, Image.prototype)
-        Object.defineProperty(Image.prototype, 'onloadeddata', {
-            value: function (event) {
-                console.log(event);
-            }
-        })
-    }
+    async componentDidMount() {}
     addImageLoadListener = async () => {
         var eles = document.getElementsByTagName('img')
-        console.log(eles)
-
-        /*let eles = document.getElementsByTagName('img')
-        console.log(eles, Object.keys(eles), eles.length)
-        */
         for (let ele of eles) {
             let fullURL = ele.src
             let prefixLength = ele.baseURI.length
             let assetUrl = await join(this.state.dir, fullURL.substring(prefixLength));
             ele.src = convertFileSrc(assetUrl);
         }
-        /*
-        document.addEventListener("error", function (e) {
-            console.log(e)
-        }, true);*/
     }
-    imageLoad = async (event) => {
-        console.log(event)
+    saveMarkdown = async (file, content) => {
+
+        let data = await invoke('write_md', {
+            name : file, content : content,
+        })
+        console.log(data)
+        return
+        let fileName = await basename(file)
+        let dir = file.substring(0, file.length - fileName.length)
+        console.log(file, content, dir, fileName, BaseDirectory.App)
+        await writeTextFile({ path: fileName, contents: content }, { dir: dir });
     }
     openFile = async () => {
         let selected = await open({
@@ -87,12 +81,14 @@ class App extends React.Component {
             name: name
         })
         await this.setState({
-            value: data
+            value: data,
+            activeFile: name,
+            changed: false,
         })
         setTimeout(() => {
             this.addImageLoadListener()
         }, 1000)
-        
+
         //console.log(data)
     }
     fmt2TreeData = (data) => {
@@ -167,6 +163,20 @@ class App extends React.Component {
             await this.getContent(node[0])
         }
     }
+    handleKeyUp = async (event) => {
+        if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
+            // do some saving
+            // props.handleSave && props.handleSave(value);
+            event.preventDefault();
+
+            // remove test log when api called
+            console.log("should save code");
+            await this.saveMarkdown(this.state.activeFile, this.state.value)
+            await this.setState({
+                changed : false,
+            })
+        }
+    }
 
     render() {
         return (
@@ -185,20 +195,18 @@ class App extends React.Component {
                         {this.state.treeData.length > 0 ? <Tree defaultSelectedKeys={[]} treeData={this.state.treeData} onSelect={this.onSelect}></Tree> : <div style={{ paddingTop: '40%', textAlign: 'center' }}>
                             <Button type="primary" onClick={this.openFile}>打开文件夹</Button>
                         </div>}
-
                     </Sider>
-                    <Content>
+                    <Content onKeyUp={this.handleKeyUp}>
+                        <p className="title">{this.state.activeFile}{this.state.changed ? '(有修改)' : ''}</p>
                         <Editor
                             value={this.state.value}
                             plugins={plugins}
                             placeholder={'Enjoy your writting'}
                             onChange={(v) => {
                                 this.setState({
-                                    value: v
+                                    value: v,
+                                    changed: true
                                 })
-                            }}
-                            style={{
-                                height: '100%'
                             }}
                             mode={'tab'}
                         />
