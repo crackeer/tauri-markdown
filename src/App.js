@@ -78,7 +78,7 @@ class App extends React.Component {
         })
     }
     getContent = async (name) => {
-        alert(name)
+       //alert(name)
        //return
         let data = await invoke('get_md_content', {
             name: name
