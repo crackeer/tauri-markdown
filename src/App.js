@@ -9,7 +9,7 @@ import "@arco-design/web-react/dist/css/arco.css";
 import { invoke, convertFileSrc } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/api/dialog';
-import { desktopDir, join, basename } from '@tauri-apps/api/path';
+import  { homeDir, join, basename, sep as SEP } from '@tauri-apps/api/path';
 import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
 import { Layout, Tree, Button } from '@arco-design/web-react';
 const Sider = Layout.Sider;
@@ -57,10 +57,11 @@ class App extends React.Component {
         await writeTextFile({ path: fileName, contents: content }, { dir: dir });
     }
     openFile = async () => {
+        const homeDirPath = await homeDir();
         let selected = await open({
             directory: true,
             multiple: false,
-            defaultPath: '',
+            defaultPath: homeDirPath,
         });
         await this.setState({
             dir: selected,
@@ -77,6 +78,8 @@ class App extends React.Component {
         })
     }
     getContent = async (name) => {
+        alert(name)
+       //return
         let data = await invoke('get_md_content', {
             name: name
         })
@@ -102,7 +105,7 @@ class App extends React.Component {
         let prefixLength = this.state.dir.length + 1
         for (var i in data) {
             let path = data[i].substr(prefixLength)
-            let parts = path.split("\\")
+            let parts = path.split(SEP)
             mapData = this.put2RightPlace(mapData, parts, this.state.dir, 0)
         }
         //console.log(mapData)
@@ -117,7 +120,7 @@ class App extends React.Component {
             retData.children.push({
                 name: parts[0],
                 title: parts[0],
-                key: uriPrefix + '\\' + parts[0],
+                key: uriPrefix + SEP + parts[0],
                 type: 'file',
             })
         } else {
@@ -131,13 +134,13 @@ class App extends React.Component {
                 retData.children.push({
                     name: parts[0],
                     title: parts[0],
-                    key: uriPrefix + '\\' + parts[0],
+                    key: uriPrefix + SEP + parts[0],
                     children: [],
                     toggled: level == 0 ? true : false
                 })
                 index = retData.children.length - 1
             }
-            retData.children[index] = this.put2RightPlace(retData.children[index], parts.splice(1), uriPrefix + '\\' + parts[0], level + 1)
+            retData.children[index] = this.put2RightPlace(retData.children[index], parts.splice(1), uriPrefix + SEP + parts[0], level + 1)
         }
         return retData
     }
