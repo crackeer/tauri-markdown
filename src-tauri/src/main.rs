@@ -2,6 +2,7 @@
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
+mod command;
 
 use std::{
     fs::metadata,
@@ -10,6 +11,8 @@ use std::{
     sync::Arc,
     vec,
 };
+
+use command::file::{get_file_content,write_file,get_file_list};
 use tauri::WindowMenuEvent;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 
@@ -18,9 +21,9 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             my_custom_command,
-            get_md_list,
-            get_md_content,
-            write_md,
+            get_file_content,
+            get_file_list,
+            write_file,
         ])
         .menu(menu)
         .on_menu_event(window_menu_event)
@@ -42,60 +45,8 @@ fn window_menu_event(event: WindowMenuEvent) {
             event.window().close().unwrap();
         }
         "open" => {
-            println!("{}", "open a file");
             event.window().emit("open", "Open File");
         }
         _ => {}
     }
-}
-
-#[tauri::command]
-fn get_md_list(dir: String) -> Vec<String> {
-    let mut dir_vec: Vec<String> = Vec::new();
-    let mut list: Vec<String> = Vec::new();
-    println!("{}", dir);
-    dir_vec.push(dir);
-   
-    let mut cur_index: usize = 0;
-    while cur_index < dir_vec.len() {
-        let entry = read_dir(dir_vec.get(cur_index).unwrap().to_string());
-        if let Ok(data) = entry {
-            for item in data.into_iter() {
-                if let Ok(dataEntry) = item {
-                    if let Ok(abc) = dataEntry.metadata() {
-                        if abc.is_dir() {
-                            dir_vec.push(dataEntry.path().to_str().unwrap().clone().to_string());
-                        } else {
-                            let file = dataEntry.path().to_str().unwrap().to_string();
-                            if file.ends_with(".md") {
-                                list.push(file);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        cur_index = cur_index + 1;
-    }
-    list
-}
-
-#[tauri::command]
-fn get_md_content(name: String) -> String {
-    let mut file_a = File::open(name).unwrap();
-    let mut content = String::new();
-    file_a.read_to_string(&mut content);
-    content
-}
-
-#[tauri::command]
-fn write_md(name: String, content: String) -> String{
-
-    let res = File::create(name);
-    if res.is_err() {
-        return res.err().unwrap().to_string();
-    }
-    let mut buffer = res.unwrap();
-    buffer.write(content.as_bytes());
-    String::from("ok")
 }

@@ -14,7 +14,16 @@
         "allowlist": {
             "all": true,
             "fs": {
-                "all": true
+                "all": true,
+                "scope": [
+                    "*"
+                ]
+            },
+            "protocol": {
+                "asset": true,
+                "assetScope": {
+                    "allow": ["*"]
+                }
             }
         },
         "bundle": {

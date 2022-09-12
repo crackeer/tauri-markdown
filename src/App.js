@@ -6,21 +6,20 @@ import highlight from '@bytemd/plugin-highlight';
 import mermaid from '@bytemd/plugin-mermaid';
 import React from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
-import { invoke, convertFileSrc } from '@tauri-apps/api/tauri'
+import { invoke } from '@tauri-apps/api/tauri'
 import { listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/api/dialog';
-import  { homeDir, join, basename, sep as SEP } from '@tauri-apps/api/path';
-import { writeTextFile, BaseDirectory } from '@tauri-apps/api/fs';
+import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir } from './util/fs'
+import { convertLocalImage, fmtFilesAsTreeData } from './util/markdown'
+import { writeFile, readFile, readDir } from './util/invoke'
 import { Layout, Tree, Button } from '@arco-design/web-react';
+import { homeDir, sep as SEP } from '@tauri-apps/api/path';
+
 const Sider = Layout.Sider;
 const Content = Layout.Content;
-const TreeNode = Tree.Node;
 
-const plugins = [
-    gfm(),
-    highlight(),
-    mermaid(),
-]
+const plugins = [gfm(), highlight(), mermaid()]
+
 
 class App extends React.Component {
     constructor(props) {
@@ -34,27 +33,15 @@ class App extends React.Component {
             changed: false,
         }
     }
-    async componentDidMount() {}
-    addImageLoadListener = async () => {
-        var eles = document.getElementsByTagName('img')
-        for (let ele of eles) {
-            let fullURL = ele.src
-            let prefixLength = ele.baseURI.length
-            let assetUrl = await join(this.state.dir, fullURL.substring(prefixLength));
-            ele.src = convertFileSrc(assetUrl);
+    async componentDidMount() {
+        await ensureBaseDir()
+        let latestDir = await getLatestLoadDir()
+        if (latestDir.length > 0) {
+            await this.setState({
+                dir: latestDir
+            })
+            await this.loadDir(latestDir)
         }
-    }
-    saveMarkdown = async (file, content) => {
-
-        let data = await invoke('write_md', {
-            name : file, content : content,
-        })
-        console.log(data)
-        return
-        let fileName = await basename(file)
-        let dir = file.substring(0, file.length - fileName.length)
-        console.log(file, content, dir, fileName, BaseDirectory.App)
-        await writeTextFile({ path: fileName, contents: content }, { dir: dir });
     }
     openFile = async () => {
         const homeDirPath = await homeDir();
@@ -66,100 +53,25 @@ class App extends React.Component {
         await this.setState({
             dir: selected,
         })
+        await setLatestLoadDir(selected)
         await this.loadDir(selected)
     }
     loadDir = async (dir) => {
-        let data = await invoke('get_md_list', {
-            dir
-        })
-
+        let fileList = await readDir(dir, ".md")
         await this.setState({
-            treeData: [this.fmt2TreeData(data)],
+            treeData: [fmtFilesAsTreeData(this.state.dir, fileList)],
         })
     }
     getContent = async (name) => {
-       //alert(name)
-       //return
-        let data = await invoke('get_md_content', {
-            name: name
-        })
+        let data = await readFile(name)
         await this.setState({
             value: data,
             activeFile: name,
             changed: false,
         })
         setTimeout(() => {
-            this.addImageLoadListener()
+            convertLocalImage(this.state.activeFile)
         }, 1000)
-
-        //console.log(data)
-    }
-    fmt2TreeData = (data) => {
-        let mapData = {
-            name: this.state.dir,
-            title: this.state.dir,
-            toggled: true,
-            key: this.state.dir,
-            children: []
-        }
-        let prefixLength = this.state.dir.length + 1
-        for (var i in data) {
-            let path = data[i].substr(prefixLength)
-            let parts = path.split(SEP)
-            mapData = this.put2RightPlace(mapData, parts, this.state.dir, 0)
-        }
-        //console.log(mapData)
-        return mapData
-    }
-    put2RightPlace = (retData, parts, uriPrefix, level) => {
-        if (parts.length < 1) {
-            return retData
-        }
-        //console.log(retData, parts, uriPrefix)
-        if (parts.length == 1) {
-            retData.children.push({
-                name: parts[0],
-                title: parts[0],
-                key: uriPrefix + SEP + parts[0],
-                type: 'file',
-            })
-        } else {
-            let index = -1
-            for (var i in retData.children) {
-                if (retData.children[i].name == parts[0]) {
-                    index = i
-                }
-            }
-            if (index < 0) {
-                retData.children.push({
-                    name: parts[0],
-                    title: parts[0],
-                    key: uriPrefix + SEP + parts[0],
-                    children: [],
-                    toggled: level == 0 ? true : false
-                })
-                index = retData.children.length - 1
-            }
-            retData.children[index] = this.put2RightPlace(retData.children[index], parts.splice(1), uriPrefix + SEP + parts[0], level + 1)
-        }
-        return retData
-    }
-    onToggle = async (node, toggled) => {
-        const { cursor, treeData } = this.state;
-        if (cursor) {
-            cursor.active = false
-            await this.setState({
-                cursor
-            })
-        }
-        node.active = true;
-        if (node.children) {
-            node.toggled = toggled;
-        }
-        this.setState(() => ({ cursor: node, treeData: Object.assign({}, treeData) }));
-        if (node.dir != undefined) {
-            await this.getContent(node.dir)
-        }
     }
     onSelect = async (node, value) => {
         if (node[0].substr(node[0].length - 3, 3) == '.md') {
@@ -168,15 +80,10 @@ class App extends React.Component {
     }
     handleKeyUp = async (event) => {
         if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
-            // do some saving
-            // props.handleSave && props.handleSave(value);
             event.preventDefault();
-
-            // remove test log when api called
-            console.log("should save code");
-            await this.saveMarkdown(this.state.activeFile, this.state.value)
+            await writeFile(this.state.activeFile, this.state.value)
             await this.setState({
-                changed : false,
+                changed: false,
             })
         }
     }
