@@ -12,18 +12,21 @@ use std::{
     vec,
 };
 
-use command::file::{get_file_content,write_file,get_file_list};
+use command::file::{get_file_content, get_file_list, write_file, simple_read_dir};
 use tauri::WindowMenuEvent;
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 
 fn main() {
-    let menu = Menu::new().add_item(CustomMenuItem::new("open", "打开")).add_item(CustomMenuItem::new("quit", "退出"));
+    let menu = Menu::new()
+        .add_item(CustomMenuItem::new("open", "打开"))
+        .add_item(CustomMenuItem::new("quit", "退出"));
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             my_custom_command,
             get_file_content,
             get_file_list,
             write_file,
+            simple_read_dir,
         ])
         .menu(menu)
         .on_menu_event(window_menu_event)
