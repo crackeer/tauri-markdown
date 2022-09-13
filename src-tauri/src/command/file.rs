@@ -75,12 +75,16 @@ pub fn simple_read_dir(dir: String, ext: String) -> Vec<FileItem> {
         if let Ok(dataEntry) = item {
             if let Ok(abc) = dataEntry.metadata() {
                 if abc.is_dir() {
-                    list.push(FileItem {
-                        path: dataEntry.path().to_str().unwrap().clone().to_string(),
-                        item_type: String::from("dir"),
-                    });
+                    let file_name = dataEntry.file_name().to_str().unwrap().to_string(); 
+                    if !file_name.starts_with(&".") {
+                        list.push(FileItem {
+                            path: dataEntry.file_name().to_str().unwrap().to_string(),
+                            item_type: String::from("dir"),
+                        });
+                    }
+                   
                 } else {
-                    let file = dataEntry.path().to_str().unwrap().to_string();
+                    let file = dataEntry.file_name().to_str().unwrap().to_string();
                     if file.ends_with(&ext) {
                         list.push(FileItem {
                             path: file,

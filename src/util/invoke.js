@@ -24,6 +24,20 @@ var readDir = async (dir, ext) => {
     return list
 }
 
+var simpleReadDir = async (dir, ext) => {
+    let list = await invoke('simple_read_dir', {
+        dir, ext
+    })
+    return list
+}
+
+var setWindowTitle = async (title) => {
+    let result = await invoke('set_window_title', {
+        title
+    })
+    return result
+}
+
 export {
-    writeFile, readFile, readDir
+    writeFile, readFile, readDir, simpleReadDir, setWindowTitle
 }

@@ -12,8 +12,8 @@ use std::{
     vec,
 };
 
-use command::file::{get_file_content, get_file_list, write_file, simple_read_dir};
-use tauri::WindowMenuEvent;
+use command::file::{get_file_content, get_file_list, simple_read_dir, write_file};
+use tauri::{WindowMenuEvent, Window};
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 
 fn main() {
@@ -21,12 +21,13 @@ fn main() {
         .add_item(CustomMenuItem::new("open", "打开"))
         .add_item(CustomMenuItem::new("quit", "退出"));
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![
+       .invoke_handler(tauri::generate_handler![
             my_custom_command,
             get_file_content,
             get_file_list,
             write_file,
             simple_read_dir,
+            set_window_title,
         ])
         .menu(menu)
         .on_menu_event(window_menu_event)
@@ -38,6 +39,13 @@ fn main() {
 fn my_custom_command() -> String {
     String::from("Simple test")
 }
+
+#[tauri::command]
+fn set_window_title(window : Window, title: String) -> String {
+   window.set_title(title.as_str());
+   String::from("ok")
+}
+
 
 fn window_menu_event(event: WindowMenuEvent) {
     match event.menu_item_id() {

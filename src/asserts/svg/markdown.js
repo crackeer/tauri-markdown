@@ -1,0 +1,3 @@
+export default function(props) {
+    return <svg t="1663066011825" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4894" width={props.width || 200} height={props.height || 200}><path d="M85.333333 682.666667V341.333333h85.333334l128 128 128-128h85.333333v341.333334h-85.333333v-220.586667l-128 128-128-128V682.666667H85.333333m597.333334-341.333334h128v170.666667h106.666666l-170.666666 192-170.666667-192H682.666667V341.333333z" fill="" p-id="4895"></path></svg>
+}

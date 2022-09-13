@@ -6,17 +6,16 @@ import highlight from '@bytemd/plugin-highlight';
 import mermaid from '@bytemd/plugin-mermaid';
 import React from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
-import { invoke } from '@tauri-apps/api/tauri'
-import { listen } from '@tauri-apps/api/event'
 import { open } from '@tauri-apps/api/dialog';
 import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir } from './util/fs'
 import { convertLocalImage, fmtFilesAsTreeData } from './util/markdown'
-import { writeFile, readFile, readDir } from './util/invoke'
-import { Layout, Tree, Button } from '@arco-design/web-react';
-import { homeDir, sep as SEP } from '@tauri-apps/api/path';
+import { writeFile, readFile, readDir, simpleReadDir, setWindowTitle} from './util/invoke'
+import { Drawer, Button, Divider } from '@arco-design/web-react';
+import { homeDir, join, sep as SEP } from '@tauri-apps/api/path';
+import { IconDoubleRight } from '@arco-design/web-react/icon';
+import IconFolder from './asserts/svg/folder.js';
+import IconMarkdown from './asserts/svg/markdown';
 
-const Sider = Layout.Sider;
-const Content = Layout.Content;
 
 const plugins = [gfm(), highlight(), mermaid()]
 
@@ -27,10 +26,17 @@ class App extends React.Component {
         this.state = {
             value: '',
             treeData: [],
-            dir: "",
+
+            rootDir: '',
+            currentDir: '',
+            fileList: [],
+
+            visible: true,
             cursor: null,
             activeFile: '',
             changed: false,
+
+            relativeDirs : []
         }
     }
     async componentDidMount() {
@@ -38,7 +44,7 @@ class App extends React.Component {
         let latestDir = await getLatestLoadDir()
         if (latestDir.length > 0) {
             await this.setState({
-                dir: latestDir
+                rootDir: latestDir
             })
             await this.loadDir(latestDir)
         }
@@ -51,16 +57,23 @@ class App extends React.Component {
             defaultPath: homeDirPath,
         });
         await this.setState({
-            dir: selected,
+            rootDir: selected,
+            currentDir : selected
         })
         await setLatestLoadDir(selected)
         await this.loadDir(selected)
     }
     loadDir = async (dir) => {
-        let fileList = await readDir(dir, ".md")
+        let fileList = await simpleReadDir(dir, ".md")
+        await this.setState({
+            fileList: fileList,
+            currentDir : dir,
+        })
+       await setWindowTitle(dir)
+        /*
         await this.setState({
             treeData: [fmtFilesAsTreeData(this.state.dir, fileList)],
-        })
+        })*/
     }
     getContent = async (name) => {
         let data = await readFile(name)
@@ -87,44 +100,106 @@ class App extends React.Component {
             })
         }
     }
+    clickFile = async (item) => {
+        if(item.item_type == 'dir') {
+            let currentDir = await join(this.state.currentDir, item.path)
+            await this.loadDir(currentDir);
+            await this.setState({
+                relativeDirs : this.generateRelativeDirs(item.path)
+            })
+        }
+    }
+    generateRelativeDirs = (relativePath) => {
+        let parts = relativePath.split(SEP)
+        let list = []
+        for(var i=0;i < parts.length;i++) {
+            list.push({
+                path : parts.slice(0, i+1).join(SEP),
+                name : parts[i]
+            })
+        }
+        return list
+    }
+    quickSelect = async () => {
+
+    }
 
     render() {
         return (
-            <div className="app">
-                <Layout>
-                    <Sider
-                        resizeDirections={['right']}
-                        style={{
-                            minWidth: 240,
-                            maxWidth: 350,
-                            height: '100vh',
-                            overflow: 'scroll'
+            <div className="app" onKeyUp={this.handleKeyUp}>
+                <div type="primary" style={{
+                    borderRight: '1px solid gray', height: '100%', width: '30px', display: 'inline-block'
+                }}>
+                    <span style={{ position: 'absolute', top: 'calc(50% - 20px)', left: '5px', zIndex: '999' }} onClick={() => {
+                        this.setState({
+                            visible: true
+                        })
+                    }}>
+                        <IconDoubleRight />
+                    </span>
+                    <Drawer
+                        title={<div><p style={{
+                            fontSize:'11px', color:'gray'
+                        }}>{this.state.rootDir}<Button size="mini" onClick={this.openFile}>open</Button></p></div>}
+                        visible={this.state.visible}
+                        closable={false}
+                        width={'30%'}
+                        footer={null}
+                        escToExit={true}
+                        maskClosable={true}
+                        onOk={() => {
+                            this.setState({
+                                visible: true
+                            })
                         }}
-                        size="small"
+
+                        placement={'left'}
+                        onCancel={() => {
+                            this.setState({
+                                visible: false
+                            })
+                        }}
                     >
-                        {this.state.treeData.length > 0 ? <Tree defaultSelectedKeys={[]} treeData={this.state.treeData} onSelect={this.onSelect}></Tree> : <div style={{ paddingTop: '40%', textAlign: 'center' }}>
+                        {this.state.fileList.length < 1 && this.state.currentDir.length < 1 ? <div style={{ paddingTop: '30%', textAlign: 'center' }}>
                             <Button type="primary" onClick={this.openFile}>打开文件夹</Button>
-                        </div>}
-                    </Sider>
-                    <Content onKeyUp={this.handleKeyUp}>
-                        <p className="title">{this.state.activeFile}{this.state.changed ? '(有修改)' : ''}</p>
-                        <Editor
-                            value={this.state.value}
-                            plugins={plugins}
-                            placeholder={'Enjoy your writting'}
-                            onChange={(v) => {
-                                this.setState({
-                                    value: v,
-                                    changed: true
-                                })
-                            }}
-                            mode={'tab'}
-                        />
-                    </Content>
-                </Layout>
+                        </div> : ''}
+                        {
+                            this.state.relativeDirs.map(item => {
+                                return <span>[{item.name}] </span>
+                            })
+                        }
+
+                        {this.state.fileList.map(item => {
+                            return <p style={{
+                                verticalAlign: 'middle'
+                            }}>{item.item_type == 'dir' ? <IconFolder height={25} width={25} /> : <IconMarkdown height={25} width={25} />}
+                                <a style={{marginLeft:'10px'}} href="javascript:;" onClick={this.clickFile.bind(this,item)}>{item.path}</a></p>
+                        })}
+
+                    </Drawer>
+
+                </div>
+                <div style={{
+                    height: '100%', width: 'calc(100% - 60px)', display: 'inline-block'
+                }}>
+                    <Editor
+                        value={this.state.value}
+                        plugins={plugins}
+                        placeholder={'Enjoy your writting'}
+                        onChange={(v) => {
+                            this.setState({
+                                value: v,
+                                changed: true
+                            })
+                        }}
+                        mode={'tab'}
+                    />
+                </div>
+
             </div>
         );
     }
 }
 
 export default App
+

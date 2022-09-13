@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@aomao/engine": "^2.9.40",
     "@arco-design/web-react": "^2.39.2",
     "@tauri-apps/api": "^1.0.2",
     "@testing-library/jest-dom": "^5.16.4",
