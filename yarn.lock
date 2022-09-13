@@ -33,6 +33,17 @@
     ot-json0 "^1.1.0"
     tinycolor2 "^1.4.2"
 
+"@aomao/toolbar@^2.10.5":
+  version "2.10.5"
+  resolved "https://registry.yarnpkg.com/@aomao/toolbar/-/toolbar-2.10.5.tgz#8613354233fcaa6eeeba897a3127a0af85f74872"
+  integrity sha512-iDcS8OJjQ+r/2Yu30qZPwrp2PLbntRfW5+spuk8XEZ4U2nMxQ8vU34641uK1lbvv6hYFyxRNkSP/rDsprSxnQA==
+  dependencies:
+    "@babel/runtime" "^7.13.10"
+    classnames-es-ts "^2.2.7"
+    keymaster "^1.6.2"
+    lodash "^4.17.21"
+    tinycolor2 "^1.4.2"
+
 "@apideck/better-ajv-errors@^0.3.1":
   version "0.3.6"
   resolved "https://registry.yarnpkg.com/@apideck/better-ajv-errors/-/better-ajv-errors-0.3.6.tgz#957d4c28e886a64a8141f7522783be65733ff097"
@@ -3455,6 +3466,11 @@ cjs-module-lexer@^1.0.0:
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/cjs-module-lexer/-/cjs-module-lexer-1.2.2.tgz#9f84ba3244a512f3a54e5277e8eef4c489864e40"
   integrity sha512-cOU9usZw8/dXIXKtwa8pM0OTJQuJkxMN6w30csNRUerHfeQ5R6U3kkU/FtJeIf3M202OHfY2U8ccInBG7/xogA==
+
+classnames-es-ts@^2.2.7:
+  version "2.2.7"
+  resolved "https://registry.yarnpkg.com/classnames-es-ts/-/classnames-es-ts-2.2.7.tgz#eecba7932afe06f400de62e46dd1f6c0342b5d8c"
+  integrity sha512-R+QrciZUBN1DvgCjgQKWX5oVLIA9WELwyRu4x9bOx99lbFLX/rXvVOEOJKn0DXWDpYLdhWOX9XFLTBBBWdDRaQ==
 
 clean-css@^5.2.2:
   version "5.3.1"
@@ -7086,6 +7102,11 @@ jsonpointer@^5.0.0:
   dependencies:
     array-includes "^3.1.5"
     object.assign "^4.1.3"
+
+keymaster@^1.6.2:
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/keymaster/-/keymaster-1.6.2.tgz#e1ae54d0ea9488f9f60b66b668f02e9a1946c6eb"
+  integrity sha512-OvA/AALN8IDKKkTk2Z+bDrzs/SQao4lo/QPbwSdDvm+frxfiYiYCSn1aHFUypJY3SruAO1y/c771agBmTXqUtg==
 
 khroma@^2.0.0:
   version "2.0.0"

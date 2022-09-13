@@ -11,17 +11,16 @@ import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir } from './util/fs'
 import { convertLocalImage, fmtFilesAsTreeData } from './util/markdown'
 import { writeFile, readFile, readDir, simpleReadDir, setWindowTitle } from './util/invoke'
 import { Drawer, Button, Divider } from '@arco-design/web-react';
-import { homeDir, join, sep as SEP } from '@tauri-apps/api/path';
+import { homeDir, join, resourceDir, sep as SEP } from '@tauri-apps/api/path';
 import { IconDoubleRight } from '@arco-design/web-react/icon';
 import IconFolder from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
-import Engine, { EngineInterface } from '@aomao/engine';
-import Toolbar from '@aomao/toolbar';
+
+
 const plugins = [gfm(), highlight(), mermaid()]
 
 
 class App extends React.Component {
-    engine = null;
     constructor(props) {
         super(props); // 用于父子组件传值
         this.state = {
@@ -42,7 +41,6 @@ class App extends React.Component {
     }
     async componentDidMount() {
         await ensureBaseDir()
-        await this.initEditor()
         let latestDir = await getLatestLoadDir()
         if (latestDir.length > 0) {
             await this.setState({
@@ -109,19 +107,19 @@ class App extends React.Component {
 
     }
     getRelativePath = (currentDir, rootDir) => {
-        if (currentDir == rootDir) {
+        if(currentDir == rootDir) {
             return ''
         }
         return currentDir.substr(rootDir.length + 1)
     }
     genQuickDirs = (relativePath) => {
-        if (relativePath.length < 1) {
+        if(relativePath.length < 1) {
             return []
         }
         let parts = relativePath.split(SEP)
         let list = [{
-            path: '..',
-            name: '主页'
+            path : '..',
+            name : '主页'
         }]
         for (var i = 0; i < parts.length; i++) {
             list.push({
@@ -133,20 +131,10 @@ class App extends React.Component {
     }
     quickSelect = async (relativePath) => {
         let currentDir = await join(this.state.rootDir, relativePath)
-        if (relativePath == "..") {
+        if(relativePath == "..") {
             currentDir = this.state.rootDir
         }
         await this.loadDir(currentDir);
-    }
-    initEditor = () => {
-        let container = document.getElementById("container")
-        console.log(container)
-        this.engine = new Engine(container, {
-            markdown: {
-                mode: 'confirm'
-            }
-        })
-        this.engine.setValue("sjasajk")
     }
 
     render() {
@@ -190,7 +178,7 @@ class App extends React.Component {
                         </div> : ''}
                         {
                             this.state.relativeDirs.map((item, i) => {
-                                return <a href="javascript:;" onClick={this.quickSelect.bind(this, item.path)}>{item.name} {i < this.state.relativeDirs.length - 1 ? '/' : ''}</a>
+                                return <a href="javascript:;" onClick={this.quickSelect.bind(this, item.path)}>{item.name} {i < this.state.relativeDirs.length-1 ? '/' : ''}</a>
                             })
                         }
 
@@ -204,20 +192,21 @@ class App extends React.Component {
                     </Drawer>
 
                 </div>
-                <Toolbar item={[
-                    ["collapse"],
-                    ["undo", "redo", "paintformat", "removeformat"],
-                    ["heading", "fontfamily", "fontsize"],
-                    ["bold", "italic", "strikethrough", "underline", "moremark"],
-                    ["fontcolor", "backcolor"],
-                    ["alignment"],
-                    ["unorderedlist", "orderedlist", "tasklist", "indent", "line-height"],
-                    ["link", "quote", "hr"],
-                ]} engine={this.engine} />
                 <div style={{
                     height: '100%', width: 'calc(100% - 60px)', display: 'inline-block'
-                }} id="container">
-
+                }}>
+                    <Editor
+                        value={this.state.value}
+                        plugins={plugins}
+                        placeholder={'Enjoy your writting'}
+                        onChange={(v) => {
+                            this.setState({
+                                value: v,
+                                changed: true
+                            })
+                        }}
+                        mode={'tab'}
+                    />
                 </div>
 
             </div>
