@@ -9,9 +9,9 @@ import "@arco-design/web-react/dist/css/arco.css";
 import { open } from '@tauri-apps/api/dialog';
 import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir } from './util/fs'
 import { convertLocalImage, fmtFilesAsTreeData } from './util/markdown'
-import { writeFile, readFile, readDir, simpleReadDir, setWindowTitle} from './util/invoke'
+import { writeFile, readFile, readDir, simpleReadDir, setWindowTitle } from './util/invoke'
 import { Drawer, Button, Divider } from '@arco-design/web-react';
-import { homeDir, join, sep as SEP } from '@tauri-apps/api/path';
+import { homeDir, join, resourceDir, sep as SEP } from '@tauri-apps/api/path';
 import { IconDoubleRight } from '@arco-design/web-react/icon';
 import IconFolder from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
@@ -36,7 +36,7 @@ class App extends React.Component {
             activeFile: '',
             changed: false,
 
-            relativeDirs : []
+            relativeDirs: []
         }
     }
     async componentDidMount() {
@@ -58,7 +58,7 @@ class App extends React.Component {
         });
         await this.setState({
             rootDir: selected,
-            currentDir : selected
+            currentDir: selected
         })
         await setLatestLoadDir(selected)
         await this.loadDir(selected)
@@ -67,13 +67,12 @@ class App extends React.Component {
         let fileList = await simpleReadDir(dir, ".md")
         await this.setState({
             fileList: fileList,
-            currentDir : dir,
+            currentDir: dir,
         })
-       await setWindowTitle(dir)
-        /*
+        await setWindowTitle(dir)
         await this.setState({
-            treeData: [fmtFilesAsTreeData(this.state.dir, fileList)],
-        })*/
+            relativeDirs: this.genQuickDirs(this.getRelativePath(dir, this.state.rootDir))
+        })
     }
     getContent = async (name) => {
         let data = await readFile(name)
@@ -101,27 +100,42 @@ class App extends React.Component {
         }
     }
     clickFile = async (item) => {
-        if(item.item_type == 'dir') {
+        if (item.item_type == 'dir') {
             let currentDir = await join(this.state.currentDir, item.path)
             await this.loadDir(currentDir);
-            await this.setState({
-                relativeDirs : this.generateRelativeDirs(item.path)
-            })
         }
+
     }
-    generateRelativeDirs = (relativePath) => {
+    getRelativePath = (currentDir, rootDir) => {
+        if(currentDir == rootDir) {
+            return ''
+        }
+        return currentDir.substr(rootDir.length + 1)
+    }
+    genQuickDirs = (relativePath) => {
+        if(relativePath.length < 1) {
+            return []
+        }
         let parts = relativePath.split(SEP)
-        let list = []
-        for(var i=0;i < parts.length;i++) {
+        let list = [{
+            path : '..',
+            name : '主页'
+        }]
+        for (var i = 0; i < parts.length; i++) {
             list.push({
-                path : parts.slice(0, i+1).join(SEP),
-                name : parts[i]
+                path: parts.slice(0, i + 1).join(SEP),
+                name: parts[i]
             })
         }
+        console.log(relativePath, list)
         return list
     }
-    quickSelect = async () => {
-
+    quickSelect = async (relativePath) => {
+        let currentDir = await join(this.state.rootDir, relativePath)
+        if(relativePath == "..") {
+            currentDir = this.state.rootDir
+        }
+        await this.loadDir(currentDir);
     }
 
     render() {
@@ -139,7 +153,7 @@ class App extends React.Component {
                     </span>
                     <Drawer
                         title={<div><p style={{
-                            fontSize:'11px', color:'gray'
+                            fontSize: '11px', color: 'gray'
                         }}>{this.state.rootDir}<Button size="mini" onClick={this.openFile}>open</Button></p></div>}
                         visible={this.state.visible}
                         closable={false}
@@ -164,8 +178,8 @@ class App extends React.Component {
                             <Button type="primary" onClick={this.openFile}>打开文件夹</Button>
                         </div> : ''}
                         {
-                            this.state.relativeDirs.map(item => {
-                                return <span>[{item.name}] </span>
+                            this.state.relativeDirs.map((item, i) => {
+                                return <a href="javascript:;" onClick={this.quickSelect.bind(this, item.path)}>{item.name} {i < this.state.relativeDirs.length-1 ? '/' : ''}</a>
                             })
                         }
 
@@ -173,7 +187,7 @@ class App extends React.Component {
                             return <p style={{
                                 verticalAlign: 'middle'
                             }}>{item.item_type == 'dir' ? <IconFolder height={25} width={25} /> : <IconMarkdown height={25} width={25} />}
-                                <a style={{marginLeft:'10px'}} href="javascript:;" onClick={this.clickFile.bind(this,item)}>{item.path}</a></p>
+                                <a style={{ marginLeft: '10px' }} href="javascript:;" onClick={this.clickFile.bind(this, item)}>{item.path}</a></p>
                         })}
 
                     </Drawer>
