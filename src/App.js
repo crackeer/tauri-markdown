@@ -1,27 +1,20 @@
-import 'bytemd/dist/index.css'
 import './App.css';
-import { Editor } from '@bytemd/react'
-import gfm from '@bytemd/plugin-gfm'
-import highlight from '@bytemd/plugin-highlight';
-import mermaid from '@bytemd/plugin-mermaid';
-import React from 'react';
+import React, {useEffect} from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
 import { open } from '@tauri-apps/api/dialog';
 import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir } from './util/fs'
-import { convertLocalImage, fmtFilesAsTreeData } from './util/markdown'
+import { convertLocalImage } from './util/markdown'
 import { writeFile, readFile, readDir, simpleReadDir, setWindowTitle } from './util/invoke'
 import { Drawer, Button, Divider } from '@arco-design/web-react';
-import { homeDir, join, sep as SEP } from '@tauri-apps/api/path';
+import { homeDir, join, resourceDir, sep as SEP } from '@tauri-apps/api/path';
 import { IconDoubleRight } from '@arco-design/web-react/icon';
 import IconFolder from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
-import Engine, { EngineInterface } from '@aomao/engine';
-import Toolbar from '@aomao/toolbar';
-const plugins = [gfm(), highlight(), mermaid()]
-
+import Vditor from 'vditor'
+import "vditor/dist/index.css";
 
 class App extends React.Component {
-    engine = null;
+    vditor  = null
     constructor(props) {
         super(props); // 用于父子组件传值
         this.state = {
@@ -42,7 +35,6 @@ class App extends React.Component {
     }
     async componentDidMount() {
         await ensureBaseDir()
-        await this.initEditor()
         let latestDir = await getLatestLoadDir()
         if (latestDir.length > 0) {
             await this.setState({
@@ -109,19 +101,19 @@ class App extends React.Component {
 
     }
     getRelativePath = (currentDir, rootDir) => {
-        if (currentDir == rootDir) {
+        if(currentDir == rootDir) {
             return ''
         }
         return currentDir.substr(rootDir.length + 1)
     }
     genQuickDirs = (relativePath) => {
-        if (relativePath.length < 1) {
+        if(relativePath.length < 1) {
             return []
         }
         let parts = relativePath.split(SEP)
         let list = [{
-            path: '..',
-            name: '主页'
+            path : '..',
+            name : '主页'
         }]
         for (var i = 0; i < parts.length; i++) {
             list.push({
@@ -133,27 +125,27 @@ class App extends React.Component {
     }
     quickSelect = async (relativePath) => {
         let currentDir = await join(this.state.rootDir, relativePath)
-        if (relativePath == "..") {
+        if(relativePath == "..") {
             currentDir = this.state.rootDir
         }
         await this.loadDir(currentDir);
     }
-    initEditor = () => {
-        let container = document.getElementById("container")
-        console.log(container)
-        this.engine = new Engine(container, {
-            markdown: {
-                mode: 'confirm'
-            }
+    loadEditor = (ele) => {
+        console.log(ele);
+        if(ele == null) {
+            return
+        }
+        this.vditor = new Vditor("container-editor", {
+            height:'100%',
+            width:'95%',
         })
-        this.engine.setValue("sjasajk")
     }
 
     render() {
         return (
             <div className="app" onKeyUp={this.handleKeyUp}>
                 <div type="primary" style={{
-                    borderRight: '1px solid gray', height: '100%', width: '30px', display: 'inline-block'
+                    position:'fixed', height: '100%', width: '30px'
                 }}>
                     <span style={{ position: 'absolute', top: 'calc(50% - 20px)', left: '5px', zIndex: '999' }} onClick={() => {
                         this.setState({
@@ -190,7 +182,7 @@ class App extends React.Component {
                         </div> : ''}
                         {
                             this.state.relativeDirs.map((item, i) => {
-                                return <a href="javascript:;" onClick={this.quickSelect.bind(this, item.path)}>{item.name} {i < this.state.relativeDirs.length - 1 ? '/' : ''}</a>
+                                return <a href="javascript:;" onClick={this.quickSelect.bind(this, item.path)}>{item.name} {i < this.state.relativeDirs.length-1 ? '/' : ''}</a>
                             })
                         }
 
@@ -204,20 +196,7 @@ class App extends React.Component {
                     </Drawer>
 
                 </div>
-                <Toolbar item={[
-                    ["collapse"],
-                    ["undo", "redo", "paintformat", "removeformat"],
-                    ["heading", "fontfamily", "fontsize"],
-                    ["bold", "italic", "strikethrough", "underline", "moremark"],
-                    ["fontcolor", "backcolor"],
-                    ["alignment"],
-                    ["unorderedlist", "orderedlist", "tasklist", "indent", "line-height"],
-                    ["link", "quote", "hr"],
-                ]} engine={this.engine} />
-                <div style={{
-                    height: '100%', width: 'calc(100% - 60px)', display: 'inline-block'
-                }} id="container">
-
+                <div style={{margin:'0 auto'}} ref={this.loadEditor} id="container-editor">
                 </div>
 
             </div>
@@ -226,4 +205,3 @@ class App extends React.Component {
 }
 
 export default App
-
