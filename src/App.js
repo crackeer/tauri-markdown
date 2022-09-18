@@ -1,20 +1,23 @@
 import './App.css';
-import React, {useEffect} from 'react';
+import React, { useEffect, useRef } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
 import { open } from '@tauri-apps/api/dialog';
 import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir } from './util/fs'
 import { convertLocalImage } from './util/markdown'
-import { writeFile, readFile, readDir, simpleReadDir, setWindowTitle } from './util/invoke'
-import { Drawer, Button, Divider } from '@arco-design/web-react';
+import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle } from './util/invoke'
+import { Drawer, Button, Layout } from '@arco-design/web-react';
 import { homeDir, join, resourceDir, sep as SEP } from '@tauri-apps/api/path';
-import { IconDoubleRight } from '@arco-design/web-react/icon';
 import IconFolder from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
 import Vditor from 'vditor'
 import "vditor/dist/index.css";
+import dayjs from 'dayjs';
+const Sider = Layout.Sider;
+const Content = Layout.Content;
 
 class App extends React.Component {
-    vditor  = null
+    vditor = null
+    vditorEle = null
     constructor(props) {
         super(props); // 用于父子组件传值
         this.state = {
@@ -30,18 +33,28 @@ class App extends React.Component {
             activeFile: '',
             changed: false,
 
-            relativeDirs: []
+            relativeDirs: [],
+            vditorHeight: 0
         }
+
     }
     async componentDidMount() {
         await ensureBaseDir()
         let latestDir = await getLatestLoadDir()
         if (latestDir.length > 0) {
+
             await this.setState({
                 rootDir: latestDir
             })
             await this.loadDir(latestDir)
         }
+        window.addEventListener('resize', this.onResizeWindow)
+    }
+    onResizeWindow = () => {
+        console.log(this.vditor, this.vditorEle)
+        this.setState({
+            vditorHeight: window.innerHeight
+        })
     }
     openFile = async () => {
         const homeDirPath = await homeDir();
@@ -75,6 +88,10 @@ class App extends React.Component {
             activeFile: name,
             changed: false,
         })
+        this.vditor.setValue(data)
+        this.convertImage()
+    }
+    convertImage = () => {
         setTimeout(() => {
             convertLocalImage(this.state.activeFile)
         }, 1000)
@@ -82,10 +99,11 @@ class App extends React.Component {
     handleKeyUp = async (event) => {
         if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
-            await writeFile(this.state.activeFile, this.state.value)
+            let result = await writeFile(this.state.activeFile, this.vditor.getValue())
             await this.setState({
                 changed: false,
             })
+            alert(result)
         }
     }
     clickFile = async (item) => {
@@ -101,19 +119,19 @@ class App extends React.Component {
 
     }
     getRelativePath = (currentDir, rootDir) => {
-        if(currentDir == rootDir) {
+        if (currentDir == rootDir) {
             return ''
         }
         return currentDir.substr(rootDir.length + 1)
     }
     genQuickDirs = (relativePath) => {
-        if(relativePath.length < 1) {
+        if (relativePath.length < 1) {
             return []
         }
         let parts = relativePath.split(SEP)
         let list = [{
-            path : '..',
-            name : '主页'
+            path: '..',
+            name: '主页'
         }]
         for (var i = 0; i < parts.length; i++) {
             list.push({
@@ -125,64 +143,66 @@ class App extends React.Component {
     }
     quickSelect = async (relativePath) => {
         let currentDir = await join(this.state.rootDir, relativePath)
-        if(relativePath == "..") {
+        if (relativePath == "..") {
             currentDir = this.state.rootDir
         }
         await this.loadDir(currentDir);
     }
     loadEditor = (ele) => {
-        console.log(ele);
-        if(ele == null) {
+        this.vditorEle = ele
+        if (ele == null) {
             return
         }
         this.vditor = new Vditor("container-editor", {
-            height:'100%',
-            width:'95%',
+            height: window.innerHeight,
+            width: '95%',
+            outline: {
+                enable: false,
+                position: 'right'
+            },
+            upload: {
+                handler: this.uploadImage
+            }
         })
+    }
+    uploadImage = async (files) => {
+        console.log(files, files.length)
+        let buffer = await files[0].arrayBuffer()
+        let view = new Uint8Array(buffer);
+        let list = []
+        for (var i in view) {
+            list.push(view[i])
+        }
+        let fileName = "image/" + dayjs().format('YYYY-MM-DD-HH-mm-ss') + ".jpg"
+
+        let fullFilePath = [this.state.currentDir, fileName].join("/")
+        console.log(fullFilePath)
+        let result = await uploadFile(fullFilePath, list)
+        console.log(result)
+        await this.vditor.insertValue('![' + fileName + '](' + fileName + ')', true)
+        this.convertImage()
     }
 
     render() {
         return (
-            <div className="app" onKeyUp={this.handleKeyUp}>
-                <div type="primary" style={{
-                    position:'fixed', height: '100%', width: '30px'
-                }}>
-                    <span style={{ position: 'absolute', top: 'calc(50% - 20px)', left: '5px', zIndex: '999' }} onClick={() => {
-                        this.setState({
-                            visible: true
-                        })
-                    }}>
-                        <IconDoubleRight />
-                    </span>
-                    <Drawer
-                        title={<div><p style={{
-                            fontSize: '11px', color: 'gray'
-                        }}>{this.state.rootDir}<Button size="mini" onClick={this.openFile}>open</Button></p></div>}
-                        visible={this.state.visible}
-                        closable={false}
-                        width={'30%'}
-                        footer={null}
-                        escToExit={true}
-                        maskClosable={true}
-                        onOk={() => {
-                            this.setState({
-                                visible: true
-                            })
+            <div className="app">
+                <Layout>
+                    <Sider
+                        resizeDirections={['right']}
+                        style={{
+                            minWidth: 200,
+                            maxWidth: 300,
+                            height: '100vh',
+                            overflow: 'scroll'
                         }}
-
-                        placement={'left'}
-                        onCancel={() => {
-                            this.setState({
-                                visible: false
-                            })
-                        }}
+                        size="small"
                     >
                         {this.state.fileList.length < 1 && this.state.currentDir.length < 1 ? <div style={{ paddingTop: '30%', textAlign: 'center' }}>
                             <Button type="primary" onClick={this.openFile}>打开文件夹</Button>
                         </div> : ''}
                         {
                             this.state.relativeDirs.map((item, i) => {
-                                return <a href="javascript:;" onClick={this.quickSelect.bind(this, item.path)}>{item.name} {i < this.state.relativeDirs.length-1 ? '/' : ''}</a>
+                                return <a href="javascript:;" onClick={this.quickSelect.bind(this, item.path)}>{item.name} {i < this.state.relativeDirs.length - 1 ? '/' : ''}</a>
                             })
                         }
 
@@ -192,15 +212,14 @@ class App extends React.Component {
                             }}>{item.item_type == 'dir' ? <IconFolder height={25} width={25} /> : <IconMarkdown height={25} width={25} />}
                                 <a style={{ marginLeft: '10px' }} href="javascript:;" onClick={this.clickFile.bind(this, item)}>{item.path}</a></p>
                         })}
-
-                    </Drawer>
-
-                </div>
-                <div style={{margin:'0 auto'}} ref={this.loadEditor} id="container-editor">
-                </div>
-
+                    </Sider>
+                    <Content onKeyUp={this.handleKeyUp}>
+                        <div style={{ margin: '0 auto', height: this.state.vditorHeight }} ref={this.loadEditor} id="container-editor">
+                        </div>
+                    </Content>
+                </Layout>
             </div>
-        );
+        )
     }
 }
 

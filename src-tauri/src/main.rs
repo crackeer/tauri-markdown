@@ -12,7 +12,7 @@ use std::{
     vec,
 };
 
-use command::file::{get_file_content, get_file_list, simple_read_dir, write_file};
+use command::file::{get_file_content, get_file_list, simple_read_dir, write_file, write_media_file};
 use tauri::{WindowMenuEvent, Window};
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 
@@ -28,6 +28,7 @@ fn main() {
             write_file,
             simple_read_dir,
             set_window_title,
+            write_media_file
         ])
         .menu(menu)
         .on_menu_event(window_menu_event)

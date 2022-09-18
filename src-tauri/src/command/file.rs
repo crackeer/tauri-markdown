@@ -2,9 +2,9 @@ use serde::Serialize;
 use std::{
     fs::metadata,
     fs::{read_dir, DirEntry, File},
-    io::{Read, Write},
+    io::{Read, Write, Bytes},
     sync::Arc,
-    vec,
+    vec, env::join_paths,
 };
 use tauri::command as aaa;
 
@@ -97,4 +97,16 @@ pub fn simple_read_dir(dir: String, ext: String) -> Vec<FileItem> {
     }
 
     list
+}
+
+#[tauri::command]
+pub fn write_media_file(file_name: String, content: Vec<u8>) -> String {
+    println!("{}", file_name);
+    let mut file : File = File::create(String::from(file_name)).unwrap();
+    for a in content {
+        if file.write(&[a]).is_err() {
+            return String::from("error")
+        }
+    }
+    String::from("ok")
 }

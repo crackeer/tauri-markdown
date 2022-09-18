@@ -38,6 +38,14 @@ var setWindowTitle = async (title) => {
     return result
 }
 
+var uploadFile = async (file_name, content) => {
+    let result = await invoke('write_media_file', {
+        fileName : file_name,
+        content : content,
+    })
+    return result
+}
+
 export {
-    writeFile, readFile, readDir, simpleReadDir, setWindowTitle
+    writeFile, readFile, readDir, simpleReadDir, setWindowTitle, uploadFile
 }
