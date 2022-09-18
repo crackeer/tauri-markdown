@@ -12,6 +12,8 @@ import IconMarkdown from './asserts/svg/markdown';
 import Vditor from 'vditor'
 import "vditor/dist/index.css";
 import dayjs from 'dayjs';
+import { listen } from '@tauri-apps/api/event'
+
 const Sider = Layout.Sider;
 const Content = Layout.Content;
 
@@ -33,6 +35,7 @@ const QuickDir = (props) => {
 class App extends React.Component {
     vditor = null
     vditorEle = null
+    unlisten = null
     constructor(props) {
         super(props); // 用于父子组件传值
         this.state = {
@@ -59,16 +62,23 @@ class App extends React.Component {
         if (latestDir.length > 0) {
 
             await this.setState({
-                rootDir: latestDir
+                rootDir: latestDir,
+                currentDir : latestDir
             })
             await this.loadDir(latestDir)
         }
         window.addEventListener('resize', this.onResizeWindow)
+        this.unlisten = listen('open', this.openFile)
+    }
+    componentWillUnmount() {
+        if (this.unlisten != null && typeof this.unlisten == 'function') {
+            this.unlisten()
+        }
     }
     onResizeWindow = () => {
         console.log(this.vditor, this.vditorEle)
         this.setState({
-            vditorHeight: window.innerHeight
+            vditorHeight: window.innerHeight - 10
         })
     }
     openFile = async () => {
@@ -100,11 +110,13 @@ class App extends React.Component {
             }
             return 1
         })
+        for(var i in fileList) {
+            fileList[i].abs_path = this.state.currentDir + SEP + fileList[i].path
+        }
         await this.setState({
             fileList: fileList,
             currentDir: dir,
         })
-        await setWindowTitle(dir)
         await this.setState({
             relativeDirs: this.genQuickDirs(this.getRelativePath(dir, this.state.rootDir))
         })
@@ -117,6 +129,7 @@ class App extends React.Component {
             changed: false,
         })
         this.vditor.setValue(data)
+        await setWindowTitle(name)
         this.convertImage()
     }
     convertImage = () => {
@@ -183,8 +196,7 @@ class App extends React.Component {
             return
         }
         this.vditor = new Vditor("container-editor", {
-            height: window.innerHeight - 10,
-            width: '95%',
+            height: window.innerHeight-10,
             outline: {
                 enable: false,
                 position: 'right'
@@ -246,14 +258,16 @@ class App extends React.Component {
                                         <span onClick={this.clickFile.bind(this, item)}>{item.path}</span>
                                     </div>
                                 }
-                                return <div className="directory-item directory-item-md">
+                                return <div className={ item.abs_path == this.state.activeFile ? 'directory-item directory-item-md directory-item-active' : 'directory-item directory-item-md'} key={this.state.abs_path}>
                                     <span onClick={this.clickFile.bind(this, item)}>{item.path}</span>
                                 </div>
                             })}
                         </div>
                     </Sider>
                     <Content onKeyUp={this.handleKeyUp}>
-                        <div style={{ margin: '5px auto', height: this.state.vditorHeight }} ref={this.loadEditor} id="container-editor">
+                        <div style={{ margin: '5px auto', width: '95%' }}>
+                            <div style={{ height: this.state.vditorHeight }} ref={this.loadEditor} id="container-editor">
+                            </div>
                         </div>
                     </Content>
                 </Layout>

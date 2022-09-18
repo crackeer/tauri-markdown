@@ -10,7 +10,7 @@ var convertLocalImage = async (currentFile) => {
     for (let ele of eles) {
         let fullURL = ele.src
         let prefixLength = ele.baseURI.length
-        console.log(ele.baseURI, rootDir)
+        console.log(ele.baseURI, rootDir, ele)
         let assetUrl = await join(rootDir, fullURL.substring(prefixLength));
         ele.src = convertFileSrc(assetUrl);
     }
