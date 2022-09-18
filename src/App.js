@@ -5,7 +5,7 @@ import { open } from '@tauri-apps/api/dialog';
 import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle } from './util/invoke'
-import { Drawer, Button, Layout } from '@arco-design/web-react';
+import { Space, Button, Link, Layout } from '@arco-design/web-react';
 import { homeDir, join, resourceDir, sep as SEP } from '@tauri-apps/api/path';
 import IconFolder from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
@@ -14,6 +14,21 @@ import "vditor/dist/index.css";
 import dayjs from 'dayjs';
 const Sider = Layout.Sider;
 const Content = Layout.Content;
+
+const QuickDir = (props) => {
+    let list = props.list
+    if (list.length < 1) {
+        return null
+    }
+    return <div className="quick-directory">
+        <a href="javascript:;" onClick={() => props.onClickItem(list[0])}>{list[0].name} </a>
+        {
+            list.length > 1 ? <QuickDir list={list.splice(1)} onClickItem={props.onClickItem} /> : null
+        }
+
+    </div>
+}
+
 
 class App extends React.Component {
     vditor = null
@@ -72,6 +87,19 @@ class App extends React.Component {
     }
     loadDir = async (dir) => {
         let fileList = await simpleReadDir(dir, ".md")
+        fileList = fileList.sort((a, b) => {
+            if (a.item_type == b.item_type) {
+                if (a.path < b.path) {
+                    return -1
+                }
+                return 1
+            }
+
+            if (a.item_type == 'dir') {
+                return -1
+            }
+            return 1
+        })
         await this.setState({
             fileList: fileList,
             currentDir: dir,
@@ -112,9 +140,6 @@ class App extends React.Component {
             await this.loadDir(currentPath);
         } else {
             await this.getContent(currentPath)
-            await this.setState({
-                visible: false
-            })
         }
 
     }
@@ -125,14 +150,18 @@ class App extends React.Component {
         return currentDir.substr(rootDir.length + 1)
     }
     genQuickDirs = (relativePath) => {
-        if (relativePath.length < 1) {
-            return []
-        }
+
         let parts = relativePath.split(SEP)
-        let list = [{
-            path: '..',
-            name: '主页'
-        }]
+        let rootName = this.state.rootDir.replaceAll('\\', '/')
+        let list = [
+            {
+                name: rootName,
+                path: this.state.rootDir,
+            }
+        ]
+        if (relativePath.length < 1) {
+            return list
+        }
         for (var i = 0; i < parts.length; i++) {
             list.push({
                 path: parts.slice(0, i + 1).join(SEP),
@@ -143,7 +172,7 @@ class App extends React.Component {
     }
     quickSelect = async (relativePath) => {
         let currentDir = await join(this.state.rootDir, relativePath)
-        if (relativePath == "..") {
+        if (relativePath == this.state.rootDir) {
             currentDir = this.state.rootDir
         }
         await this.loadDir(currentDir);
@@ -154,7 +183,7 @@ class App extends React.Component {
             return
         }
         this.vditor = new Vditor("container-editor", {
-            height: window.innerHeight,
+            height: window.innerHeight - 10,
             width: '95%',
             outline: {
                 enable: false,
@@ -162,7 +191,7 @@ class App extends React.Component {
             },
             upload: {
                 handler: this.uploadImage
-            }
+            },
         })
     }
     uploadImage = async (files) => {
@@ -176,9 +205,7 @@ class App extends React.Component {
         let fileName = "image/" + dayjs().format('YYYY-MM-DD-HH-mm-ss') + ".jpg"
 
         let fullFilePath = [this.state.currentDir, fileName].join("/")
-        console.log(fullFilePath)
         let result = await uploadFile(fullFilePath, list)
-        console.log(result)
         await this.vditor.insertValue('![' + fileName + '](' + fileName + ')', true)
         this.convertImage()
     }
@@ -190,31 +217,43 @@ class App extends React.Component {
                     <Sider
                         resizeDirections={['right']}
                         style={{
-                            minWidth: 200,
+                            minWidth: 240,
                             maxWidth: 300,
                             height: '100vh',
                             overflow: 'scroll'
                         }}
                         size="small"
                     >
-                        {this.state.fileList.length < 1 && this.state.currentDir.length < 1 ? <div style={{ paddingTop: '30%', textAlign: 'center' }}>
-                            <Button type="primary" onClick={this.openFile}>打开文件夹</Button>
-                        </div> : ''}
                         {
-                            this.state.relativeDirs.map((item, i) => {
-                                return <a href="javascript:;" onClick={this.quickSelect.bind(this, item.path)}>{item.name} {i < this.state.relativeDirs.length - 1 ? '/' : ''}</a>
-                            })
+                            this.state.relativeDirs.length > 0 ? <>
+                                <Space wrap size={[1, 1]} split={'/'}>
+
+                                    {
+                                        this.state.relativeDirs.map(item => {
+                                            return <Link onClick={this.quickSelect.bind(this, item.path)}>{item.name}</Link>
+                                        })
+                                    }
+                                </Space>
+                                <hr />
+                            </> : null
                         }
 
-                        {this.state.fileList.map(item => {
-                            return <p style={{
-                                verticalAlign: 'middle'
-                            }}>{item.item_type == 'dir' ? <IconFolder height={25} width={25} /> : <IconMarkdown height={25} width={25} />}
-                                <a style={{ marginLeft: '10px' }} href="javascript:;" onClick={this.clickFile.bind(this, item)}>{item.path}</a></p>
-                        })}
+                        <div className="directory">
+                            {this.state.fileList.map(item => {
+                                if (item.item_type == 'dir') {
+                                    return <div className="directory-item">
+                                        <IconFolder height={25} width={25} />
+                                        <span onClick={this.clickFile.bind(this, item)}>{item.path}</span>
+                                    </div>
+                                }
+                                return <div className="directory-item directory-item-md">
+                                    <span onClick={this.clickFile.bind(this, item)}>{item.path}</span>
+                                </div>
+                            })}
+                        </div>
                     </Sider>
                     <Content onKeyUp={this.handleKeyUp}>
-                        <div style={{ margin: '0 auto', height: this.state.vditorHeight }} ref={this.loadEditor} id="container-editor">
+                        <div style={{ margin: '5px auto', height: this.state.vditorHeight }} ref={this.loadEditor} id="container-editor">
                         </div>
                     </Content>
                 </Layout>
