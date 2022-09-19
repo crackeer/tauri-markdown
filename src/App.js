@@ -2,7 +2,7 @@ import './App.css';
 import React, { useEffect, useRef } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
 import { open } from '@tauri-apps/api/dialog';
-import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir } from './util/fs'
+import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir, setActiveFileCache, deleteActiveFileCache } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle } from './util/invoke'
 import { Space, Button, Link, Layout } from '@arco-design/web-react';
@@ -54,18 +54,18 @@ class App extends React.Component {
             relativeDirs: [],
             vditorHeight: 0
         }
-
     }
     async componentDidMount() {
         await ensureBaseDir()
-        let latestDir = await getLatestLoadDir()
-        if (latestDir.length > 0) {
-
+        let parts = await getLatestLoadDir()
+        if (parts.length > 0) {
+            let currentDir = parts[1] == undefined ? parts[0] : parts[1];
             await this.setState({
-                rootDir: latestDir,
-                currentDir : latestDir
+                rootDir: parts[0],
+                currentDir: currentDir,
+                activeFile: parts[2] == undefined ? '' : parts[1],
             })
-            await this.loadDir(latestDir)
+            await this.loadDir(currentDir)
         }
         window.addEventListener('resize', this.onResizeWindow)
         this.unlisten = listen('open', this.openFile)
@@ -92,7 +92,7 @@ class App extends React.Component {
             rootDir: selected,
             currentDir: selected
         })
-        await setLatestLoadDir(selected)
+        await setLatestLoadDir(selected, selected, '')
         await this.loadDir(selected)
     }
     loadDir = async (dir) => {
@@ -104,21 +104,16 @@ class App extends React.Component {
                 }
                 return 1
             }
-
             if (a.item_type == 'dir') {
                 return -1
             }
             return 1
         })
-        for(var i in fileList) {
+        for (var i in fileList) {
             fileList[i].abs_path = this.state.currentDir + SEP + fileList[i].path
         }
         await this.setState({
             fileList: fileList,
-            currentDir: dir,
-        })
-        await this.setState({
-            relativeDirs: this.genQuickDirs(this.getRelativePath(dir, this.state.rootDir))
         })
     }
     getContent = async (name) => {
@@ -144,16 +139,28 @@ class App extends React.Component {
             await this.setState({
                 changed: false,
             })
-            alert(result)
+            await setWindowTitle(this.state.activeFile)
+            await deleteActiveFileCache(this.state.activeFile)
         }
     }
     clickFile = async (item) => {
         let currentPath = await join(this.state.currentDir, item.path)
         if (item.item_type == 'dir') {
+            await this.setState({
+                currentDir: currentPath
+            })
             await this.loadDir(currentPath);
+            let tmp = this.getRelativePath(this.state.currentDir, this.state.rootDir)
+            await this.setState({
+                relativeDirs: this.genQuickDirs(tmp)
+            })
         } else {
+            await this.setState({
+                activeFile: currentPath
+            })
             await this.getContent(currentPath)
         }
+        await setLatestLoadDir(this.state.rootDir, this.state.currentDir, this.state.activeFile)
 
     }
     getRelativePath = (currentDir, rootDir) => {
@@ -163,7 +170,6 @@ class App extends React.Component {
         return currentDir.substr(rootDir.length + 1)
     }
     genQuickDirs = (relativePath) => {
-
         let parts = relativePath.split(SEP)
         let rootName = this.state.rootDir.replaceAll('\\', '/')
         let list = [
@@ -188,6 +194,9 @@ class App extends React.Component {
         if (relativePath == this.state.rootDir) {
             currentDir = this.state.rootDir
         }
+        await this.setState({
+            currentDir: currentDir
+        })
         await this.loadDir(currentDir);
     }
     loadEditor = (ele) => {
@@ -196,7 +205,7 @@ class App extends React.Component {
             return
         }
         this.vditor = new Vditor("container-editor", {
-            height: window.innerHeight-10,
+            height: window.innerHeight - 10,
             outline: {
                 enable: false,
                 position: 'right'
@@ -204,7 +213,12 @@ class App extends React.Component {
             upload: {
                 handler: this.uploadImage
             },
+            input: this.onInput
         })
+    }
+    onInput = async (str) => {
+        setWindowTitle(this.state.activeFile + '(有修改)')
+        await setActiveFileCache(this.state.activeFile, str)
     }
     uploadImage = async (files) => {
         console.log(files, files.length)
@@ -215,9 +229,8 @@ class App extends React.Component {
             list.push(view[i])
         }
         let fileName = "image/" + dayjs().format('YYYY-MM-DD-HH-mm-ss') + ".jpg"
-
         let fullFilePath = [this.state.currentDir, fileName].join("/")
-        let result = await uploadFile(fullFilePath, list)
+        await uploadFile(fullFilePath, list)
         await this.vditor.insertValue('![' + fileName + '](' + fileName + ')', true)
         this.convertImage()
     }
@@ -258,7 +271,7 @@ class App extends React.Component {
                                         <span onClick={this.clickFile.bind(this, item)}>{item.path}</span>
                                     </div>
                                 }
-                                return <div className={ item.abs_path == this.state.activeFile ? 'directory-item directory-item-md directory-item-active' : 'directory-item directory-item-md'} key={this.state.abs_path}>
+                                return <div className={item.abs_path == this.state.activeFile ? 'directory-item directory-item-md directory-item-active' : 'directory-item directory-item-md'} key={this.state.abs_path}>
                                     <span onClick={this.clickFile.bind(this, item)}>{item.path}</span>
                                 </div>
                             })}
