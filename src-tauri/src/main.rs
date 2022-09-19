@@ -19,7 +19,18 @@ use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 fn main() {
     let menu = Menu::new()
         .add_item(CustomMenuItem::new("open", "打开"))
-        .add_item(CustomMenuItem::new("quit", "退出"));
+        .add_item(CustomMenuItem::new("quit", "退出")).add_native_item(MenuItem::Copy);
+    
+    let menu = Menu::with_items([
+            MenuItem::SelectAll.into(),
+            #[cfg(target_os = "macos")]
+            MenuItem::Redo.into(),
+            CustomMenuItem::new("toggle", "Toggle visibility").into(),
+            Submenu::new("View", Menu::new()).into(),
+          ]).add_item(CustomMenuItem::new("open", "打开"))
+          .add_item(CustomMenuItem::new("quit", "退出")).add_native_item(MenuItem::Copy);
+    //let menu = Menu::os_default(&"sss");
+    let ctx = tauri::generate_context!();
     tauri::Builder::default()
        .invoke_handler(tauri::generate_handler![
             my_custom_command,
@@ -32,7 +43,7 @@ fn main() {
         ])
         .menu(menu)
         .on_menu_event(window_menu_event)
-        .run(tauri::generate_context!())
+        .run(ctx)
         .expect("error while running tauri application");
 }
 
