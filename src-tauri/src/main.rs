@@ -21,14 +21,13 @@ fn main() {
         .add_item(CustomMenuItem::new("open", "打开"))
         .add_item(CustomMenuItem::new("quit", "退出")).add_native_item(MenuItem::Copy);
     
-    let menu = Menu::with_items([
-            MenuItem::SelectAll.into(),
-            #[cfg(target_os = "macos")]
-            MenuItem::Redo.into(),
-            CustomMenuItem::new("toggle", "Toggle visibility").into(),
-            Submenu::new("View", Menu::new()).into(),
-          ]).add_item(CustomMenuItem::new("open", "打开"))
-          .add_item(CustomMenuItem::new("quit", "退出")).add_native_item(MenuItem::Copy);
+    let menu =Menu::new()
+    .add_submenu(Submenu::new(
+      "View", // 子菜单名称
+      Menu::new() // 子菜单项
+        .add_native_item(MenuItem::Quit).add_item(CustomMenuItem::new("open", "打开"))
+        .add_item(CustomMenuItem::new("quit", "退出")).add_native_item(MenuItem::Copy)
+    ));
     //let menu = Menu::os_default(&"sss");
     let ctx = tauri::generate_context!();
     tauri::Builder::default()
