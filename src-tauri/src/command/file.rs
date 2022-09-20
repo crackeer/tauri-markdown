@@ -10,6 +10,7 @@ use tauri::command as aaa;
 
 #[tauri::command]
 pub fn get_file_content(name: String) -> String {
+    println!("{}", name);
     let mut file_a = File::open(name).unwrap();
     let mut content = String::new();
     file_a.read_to_string(&mut content);

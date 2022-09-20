@@ -89,3 +89,9 @@ img {
 .directory-item-md {
     padding-left: 25px;
 }
+
+.empty-directory {
+    margin: 0 auto;
+    text-align: center;
+    padding-top: 40%;
+}

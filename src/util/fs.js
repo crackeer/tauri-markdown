@@ -5,9 +5,13 @@ const dirLatestCache = 'dir.latest.cache'
 var getLatestLoadDir = async () => {
     try {
         let contents = await readTextFile(dirLatestCache, { dir: BaseDirectory.App });
-        return contents.split('#')
+        let parts = contents.split('#')
+        if(parts.length > 0 && parts[0] != '') {
+            return parts
+        }
+        return []
     } catch(e) {
-        return ""
+        return []
     }
 }
 
