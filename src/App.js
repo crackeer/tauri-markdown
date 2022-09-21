@@ -2,11 +2,11 @@ import './App.css';
 import React, { useEffect, useRef } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
 import { open } from '@tauri-apps/api/dialog';
-import { getLatestLoadDir, setLatestLoadDir, ensureBaseDir, setActiveFileCache, deleteActiveFileCache } from './util/fs'
+import { getLatestLoadDir, setLatestLoadDir, ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs, getRelativePath } from './util/common'
 import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle } from './util/invoke'
-import { Space, Button, Link, Layout } from '@arco-design/web-react';
+import { Space, Button, Link, Layout, Drawer } from '@arco-design/web-react';
 import { homeDir, join, resourceDir, sep as SEP } from '@tauri-apps/api/path';
 import IconFolder from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
@@ -14,30 +14,53 @@ import Vditor from 'vditor'
 import "vditor/dist/index.css";
 import dayjs from 'dayjs';
 import { listen } from '@tauri-apps/api/event'
-import { fireEvent } from '@testing-library/react';
 
 const Sider = Layout.Sider;
 const Content = Layout.Content;
 
 const QuickDir = (props) => {
-    let list = props.list
-    if (list.length < 1) {
+    if (props.relativeDirs == undefined || props.relativeDirs.length < 1) {
         return null
     }
-    return <div className="quick-directory">
-        <a href="javascript:;" onClick={() => props.onClickItem(list[0])}>{list[0].name} </a>
-        {
-            list.length > 1 ? <QuickDir list={list.splice(1)} onClickItem={props.onClickItem} /> : null
-        }
-
+    return <div>
+        <Space wrap size={[1, 1]} split={'/'}>
+            {
+                props.relativeDirs.map(item => {
+                    return <Link onClick={() => props.quickSelect(item.path)}>{item.name}</Link>
+                })
+            }
+        </Space>
     </div>
+}
+const FileList = (props) => {
+    if (props.rootDir == undefined || props.rootDir.length < 1) {
+        return <div>
+            <Button type="primary" onClick={props.openFile}>打开</Button>
+        </div>
+    }
+    return <div className="directory">
+        {props.fileList.map(item => {
+            if (item.item_type == 'dir') {
+                return <div className="directory-item">
+                    <IconFolder height={25} width={25} />
+                    <span onClick={() => props.clickFile(item)}>{item.path}</span>
+                </div>
+            }
+            return <div className={item.abs_path == this.state.activeFile ? 'directory-item directory-item-md directory-item-active' : 'directory-item directory-item-md'} key={this.state.abs_path}>
+                <span onClick={() => props.clickFile(item)}>{item.path}</span>
+            </div>
+        })}
+    </div>
+}
+
+const getVditorHeight = () => {
+    return window.innerHeight - 10
 }
 
 
 class App extends React.Component {
     vditor = null
     vditorEle = null
-    unlisten = null
     constructor(props) {
         super(props); // 用于父子组件传值
         this.state = {
@@ -48,7 +71,7 @@ class App extends React.Component {
             currentDir: '',
             fileList: [],
 
-            visible: true,
+            visible: false,
             cursor: null,
             activeFile: '',
             changed: false,
@@ -58,27 +81,23 @@ class App extends React.Component {
         }
     }
     async componentDidMount() {
-        await ensureBaseDir()
-        let parts = await getLatestLoadDir()
-        console.log(parts)
-        if (parts.length > 0) {
-            let currentDir = parts[1] == undefined ? parts[0] : parts[1];
-            await this.setState({
-                activeFile: parts[2] == undefined ? '' : parts[1],
-            })
-            await this.loadDir(parts[0], currentDir)
+        await ensureConfigDir()
+        let object = await getLoadConfig()
+        if (object != undefined) {
+            await this.getContent(object.activeFile)
         }
         window.addEventListener('resize', this.onResizeWindow)
     }
-    componentWillUnmount() {
-        if (this.unlisten != null && typeof this.unlisten == 'function') {
-            this.unlisten()
-        }
-    }
     onResizeWindow = () => {
-        console.log(this.vditor, this.vditorEle)
         this.setState({
-            vditorHeight: window.innerHeight - 10
+            vditorHeight: getVditorHeight()
+        })
+        console.log(getVditorHeight())
+        this.resetVditoHeight()
+    }
+    resetVditoHeight = () => {
+        this.setState({
+            vditorHeight: getVditorHeight()
         })
     }
     openFile = async () => {
@@ -88,25 +107,24 @@ class App extends React.Component {
             multiple: false,
             defaultPath: homeDirPath,
         });
-        console.log(selected)
         await this.loadDir(selected, selected)
-        await setLatestLoadDir(selected, selected, '')
     }
     loadDir = async (rootDir, dir) => {
         let fileList = await simpleReadDir(dir, ".md")
         fileList = fmtFileList(fileList, this.state.currentDir)
         let tmp = getRelativePath(dir, rootDir)
         await this.setState({
-            rootDir : rootDir,
+            rootDir: rootDir,
             fileList: fileList,
-            currentDir : dir,
-            relativeDirs : genQuickDirs(tmp, rootDir)
+            currentDir: dir,
+            relativeDirs: genQuickDirs(tmp, rootDir)
         })
+        this.restoreLoadConfig()
     }
     getContent = async (name) => {
         let data = await readFile(name)
         await this.setState({
-            activeFile : name,
+            activeFile: name,
         })
         this.vditor.setValue(data)
         await setWindowTitle(name)
@@ -135,7 +153,14 @@ class App extends React.Component {
         } else {
             await this.getContent(currentPath)
         }
-        setLatestLoadDir(this.state.rootDir, this.state.currentDir, this.state.activeFile)
+        this.restoreLoadConfig()
+    }
+    restoreLoadConfig = () => {
+        setLoadConfig({
+            rootDir: this.state.rootDir,
+            currentDir: this.state.currentDir,
+            activeFile: this.state.activeFile
+        })
     }
     quickSelect = async (relativePath) => {
         let currentDir = await join(this.state.rootDir, relativePath)
@@ -150,7 +175,7 @@ class App extends React.Component {
             return
         }
         this.vditor = new Vditor("container-editor", {
-            height: window.innerHeight - 10,
+            height: getVditorHeight(),
             upload: {
                 handler: this.uploadImage
             },
@@ -175,64 +200,49 @@ class App extends React.Component {
         await this.vditor.insertValue('![' + fileName + '](' + fileName + ')', true)
         this.convertImage()
     }
+    selectFile = async () => {
+        this.setState({
+            visible: true
+        })
+    }
 
     render() {
         return (
-            <div className="app">
-                <Layout>
-                    <Sider
-                        resizeDirections={['right']}
-                        style={{
-                            minWidth: '20%',
-                            maxWidth: '25%',
-                            height: '100vh',
-                            overflow: 'scroll'
-                        }}
-                        size="small"
-                    >
-                        {
-                            this.state.relativeDirs.length > 0 ? <>
-                                <Space wrap size={[1, 1]} split={'/'}>
+            <div className="app" onKeyUp={this.handleKeyUp}>
 
-                                    {
-                                        this.state.relativeDirs.map(item => {
-                                            return <Link onClick={this.quickSelect.bind(this, item.path)}>{item.name}</Link>
-                                        })
-                                    }
-                                </Space>
-                                <hr />
-                            </> : null
-                        }
+                <div style={{ height: this.state.vditorHeight, margin: '5px auto', width: '95%' }} ref={this.loadEditor} id="container-editor"></div>
+                <Button onClick={this.selectFile}>选择</Button>
 
-                        <div className="directory">
-                            {this.state.fileList.map(item => {
-                                if (item.item_type == 'dir') {
-                                    return <div className="directory-item">
-                                        <IconFolder height={25} width={25} />
-                                        <span onClick={this.clickFile.bind(this, item)}>{item.path}</span>
-                                    </div>
-                                }
-                                return <div className={item.abs_path == this.state.activeFile ? 'directory-item directory-item-md directory-item-active' : 'directory-item directory-item-md'} key={this.state.abs_path}>
-                                    <span onClick={this.clickFile.bind(this, item)}>{item.path}</span>
-                                </div>
-                            })}
-                        </div>
-                        {
-                            this.state.rootDir.length < 1 ? <div className="empty-directory">
-                                <Button type="primary" onClick={this.openFile}>打开</Button>
-                            </div> : null
-                        }
-                    </Sider>
-                    <Content onKeyUp={this.handleKeyUp}>
-                        <div style={{ margin: '5px auto', width: '95%' }}>
-                            <div style={{ height: this.state.vditorHeight }} ref={this.loadEditor} id="container-editor">
-                            </div>
-                        </div>
-                    </Content>
-                </Layout>
+                <Drawer
+                    title={<div><p style={{
+                        fontSize: '11px', color: 'gray'
+                    }}>{this.state.rootDir}<Button size="mini" onClick={this.openFile}>open</Button></p></div>}
+                    visible={this.state.visible}
+                    closable={false}
+                    width={'30%'}
+                    footer={null}
+                    escToExit={true}
+                    maskClosable={true}
+                    onOk={() => {
+                        this.setState({
+                            visible: true
+                        })
+                    }}
+
+                    placement={'bottom'}
+                    onCancel={() => {
+                        this.setState({
+                            visible: false
+                        })
+                    }}
+                >
+                    <QuickDir relativeDirs={this.state.relativeDirs} />
+                    <FileList fileList={this.state.fileList} rootDir={this.state.rootDir} activeFile={this.state.activeFile} currentDir={this.state.currentDir} />
+                </Drawer>
             </div>
         )
     }
 }
 
 export default App
+

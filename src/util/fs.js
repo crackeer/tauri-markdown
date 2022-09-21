@@ -1,10 +1,32 @@
 import { writeTextFile, BaseDirectory, readTextFile, readDir, createDir, removeFile } from '@tauri-apps/api/fs';
 import { sep as SEP } from '@tauri-apps/api/path';
+
 const dirLatestCache = 'dir.latest.cache'
+const loadConfigFile = "load.json"
+
+
+var setLoadConfig = async (object) => {
+    try {
+        let content = JSON.stringify(object)
+        return await writeTextFile(loadConfigFile, content, { dir: BaseDirectory.Config });
+    } catch(e) {
+        return false
+    }
+}
+
+var getLoadConfig = async () => {
+    try {
+        let data = await readTextFile(loadConfigFile, { dir: BaseDirectory.Config });
+        let result = JSON.parse(data)
+        return result
+    } catch(e) {
+        return {}
+    }
+}
 
 var getLatestLoadDir = async () => {
     try {
-        let contents = await readTextFile(dirLatestCache, { dir: BaseDirectory.App });
+        let contents = await readTextFile(dirLatestCache, { dir: BaseDirectory.Config });
         let parts = contents.split('#')
         if(parts.length > 0 && parts[0] != '') {
             return parts
@@ -18,12 +40,13 @@ var getLatestLoadDir = async () => {
 var setLatestLoadDir = async (rootDir, currentDir, activeFile) => {
     try {
         let content = [rootDir, currentDir,activeFile].join('#')
-        return await writeTextFile(dirLatestCache, content, { dir: BaseDirectory.App });
+        return await writeTextFile(dirLatestCache, content, { dir: BaseDirectory.Config });
     } catch(e) {
         console.log(e)
         return false
     }
 }
+
 
 var setActiveFileCache = async (activeFile, content) => {
     try {
@@ -61,6 +84,15 @@ var ensureBaseDir = async () => {
     }
 }
 
+var ensureConfigDir = async () => {
+    try {
+        await readDir('', { dir: BaseDirectory.Config, recursive: false });
+    } catch(e) {
+        await createDir('', { dir: BaseDirectory.Config, recursive: false }); 
+    }
+}
+
+
 export {
-    getLatestLoadDir, setLatestLoadDir, ensureBaseDir, setActiveFileCache, deleteActiveFileCache
+    getLatestLoadDir, setLatestLoadDir, ensureBaseDir, ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig
 }
