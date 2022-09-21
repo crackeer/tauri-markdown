@@ -1,5 +1,5 @@
 use serde::{Serialize};
-use tauri::InvokeError;
+use tauri::{InvokeError};
 use std::{
     fs::metadata,
     fs::{read_dir, DirEntry, File},
@@ -13,10 +13,12 @@ pub fn get_file_content(name: String) -> Result<String, InvokeError> {
     let file = File::open(name);
     let mut file = match file {
         Ok(f) => f,
-        Err(err) => return InvokeError::from(err.to_string()),
+        Err(err) => return Err(InvokeError::from(err.to_string())),
     };
     let mut content = String::new();
-    file.read_to_string(&mut content);
+    if let Err(err) = file.read_to_string(&mut content) {
+        return Err(InvokeError::from(err.to_string()));
+    }
     Ok(content)
 }
 

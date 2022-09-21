@@ -46,7 +46,7 @@ const FileList = (props) => {
                     <span onClick={() => props.clickFile(item)}>{item.path}</span>
                 </div>
             }
-            return <div className={item.abs_path == this.state.activeFile ? 'directory-item directory-item-md directory-item-active' : 'directory-item directory-item-md'} key={this.state.abs_path}>
+            return <div className={item.abs_path == props.activeFile ? 'directory-item directory-item-md directory-item-active' : 'directory-item directory-item-md'} key={item.abs_path}>
                 <span onClick={() => props.clickFile(item)}>{item.path}</span>
             </div>
         })}
@@ -64,8 +64,6 @@ class App extends React.Component {
     constructor(props) {
         super(props); // 用于父子组件传值
         this.state = {
-            value: '',
-            treeData: [],
 
             rootDir: '',
             currentDir: '',
@@ -85,6 +83,7 @@ class App extends React.Component {
         let object = await getLoadConfig()
         if (object != undefined) {
             await this.getContent(object.activeFile)
+            this.setState(object)
         }
         window.addEventListener('resize', this.onResizeWindow)
     }
@@ -109,7 +108,7 @@ class App extends React.Component {
         });
         await this.loadDir(selected, selected)
     }
-    loadDir = async (rootDir, dir) => {
+    loadDir = async (rootDir, dir, visible) => {
         let fileList = await simpleReadDir(dir, ".md")
         fileList = fmtFileList(fileList, this.state.currentDir)
         let tmp = getRelativePath(dir, rootDir)
@@ -117,18 +116,23 @@ class App extends React.Component {
             rootDir: rootDir,
             fileList: fileList,
             currentDir: dir,
-            relativeDirs: genQuickDirs(tmp, rootDir)
+            relativeDirs: genQuickDirs(tmp, rootDir),
         })
         this.restoreLoadConfig()
     }
     getContent = async (name) => {
-        let data = await readFile(name)
-        await this.setState({
-            activeFile: name,
-        })
-        this.vditor.setValue(data)
-        await setWindowTitle(name)
-        this.convertImage()
+        try {
+            let data = await readFile(name)
+            await this.setState({
+                activeFile: name,
+            })
+            this.vditor.setValue(data)
+            await setWindowTitle(name)
+            this.convertImage()
+        } catch (e) {
+            alert(e)
+        }
+
     }
     convertImage = () => {
         setTimeout(() => {
@@ -201,20 +205,36 @@ class App extends React.Component {
         this.convertImage()
     }
     selectFile = async () => {
-        this.setState({
+        await this.setState({
             visible: true
         })
+        let currentDir = this.state.currentDir
+        let rootDir = this.state.rootDir
+        if (this.state.rootDir.length > 0) {
+            if (currentDir.length < 1) {
+                currentDir = rootDir
+            }
+            await this.loadDir(rootDir, currentDir)
+            return
+        } else {
+            this.openFile()
+        }
+
+
     }
 
     render() {
         return (
             <div className="app" onKeyUp={this.handleKeyUp}>
-
-                <div style={{ height: this.state.vditorHeight, margin: '5px auto', width: '95%' }} ref={this.loadEditor} id="container-editor"></div>
-                <Button onClick={this.selectFile}>选择</Button>
+                <div style={{ margin: '5px auto', width: '80%' }}>
+                    <div style={{ height: this.state.vditorHeight, }} ref={this.loadEditor} id="container-editor"></div>
+                </div>
+                <div style={{ position: 'fixed', right: '10px', top: '10px' }}>
+                    <Button type="primary" onClick={this.selectFile}>打开</Button>
+                </div>
 
                 <Drawer
-                    title={<QuickDir relativeDirs={this.state.relativeDirs} />}
+                    title={<QuickDir relativeDirs={this.state.relativeDirs} quickSelect={this.quickSelect} />}
                     visible={this.state.visible}
                     closable={false}
                     height={'70%'}
@@ -228,8 +248,7 @@ class App extends React.Component {
                         })
                     }}
                 >
-                    
-                    <FileList fileList={this.state.fileList} rootDir={this.state.rootDir} activeFile={this.state.activeFile} currentDir={this.state.currentDir} />
+                    <FileList fileList={this.state.fileList} rootDir={this.state.rootDir} activeFile={this.state.activeFile} currentDir={this.state.currentDir} openFile={this.openFile} clickFile={this.clickFile} />
                 </Drawer>
             </div>
         )
