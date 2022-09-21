@@ -214,21 +214,13 @@ class App extends React.Component {
                 <Button onClick={this.selectFile}>选择</Button>
 
                 <Drawer
-                    title={<div><p style={{
-                        fontSize: '11px', color: 'gray'
-                    }}>{this.state.rootDir}<Button size="mini" onClick={this.openFile}>open</Button></p></div>}
+                    title={<QuickDir relativeDirs={this.state.relativeDirs} />}
                     visible={this.state.visible}
                     closable={false}
-                    width={'30%'}
+                    height={'70%'}
                     footer={null}
                     escToExit={true}
                     maskClosable={true}
-                    onOk={() => {
-                        this.setState({
-                            visible: true
-                        })
-                    }}
-
                     placement={'bottom'}
                     onCancel={() => {
                         this.setState({
@@ -236,7 +228,7 @@ class App extends React.Component {
                         })
                     }}
                 >
-                    <QuickDir relativeDirs={this.state.relativeDirs} />
+                    
                     <FileList fileList={this.state.fileList} rootDir={this.state.rootDir} activeFile={this.state.activeFile} currentDir={this.state.currentDir} />
                 </Drawer>
             </div>

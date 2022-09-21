@@ -1,20 +1,23 @@
-use serde::Serialize;
+use serde::{Serialize};
+use tauri::InvokeError;
 use std::{
     fs::metadata,
     fs::{read_dir, DirEntry, File},
     io::{Read, Write, Bytes},
     sync::Arc,
-    vec, env::join_paths,
+    vec, env::join_paths, error::Error
 };
-use tauri::command as aaa;
 
 #[tauri::command]
-pub fn get_file_content(name: String) -> String {
-    println!("{}", name);
-    let mut file_a = File::open(name).unwrap();
+pub fn get_file_content(name: String) -> Result<String, InvokeError> {
+    let file = File::open(name);
+    let mut file = match file {
+        Ok(f) => f,
+        Err(err) => return InvokeError::from(err.to_string()),
+    };
     let mut content = String::new();
-    file_a.read_to_string(&mut content);
-    content
+    file.read_to_string(&mut content);
+    Ok(content)
 }
 
 #[tauri::command]
