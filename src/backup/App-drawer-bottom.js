@@ -82,7 +82,7 @@ class App extends React.Component {
         await ensureConfigDir()
         let object = await getLoadConfig()
         if (object != undefined) {
-            this.getContent(object.activeFile)
+            await this.getContent(object.activeFile)
             this.setState(object)
         }
         window.addEventListener('resize', this.onResizeWindow)
@@ -91,6 +91,7 @@ class App extends React.Component {
         this.setState({
             vditorHeight: getVditorHeight()
         })
+        console.log(getVditorHeight())
         this.resetVditoHeight()
     }
     resetVditoHeight = () => {
@@ -107,7 +108,7 @@ class App extends React.Component {
         });
         await this.loadDir(selected, selected)
     }
-    loadDir = async (rootDir, dir) => {
+    loadDir = async (rootDir, dir, visible) => {
         let fileList = await simpleReadDir(dir, ".md")
         fileList = fmtFileList(fileList, this.state.currentDir)
         let tmp = getRelativePath(dir, rootDir)
@@ -117,6 +118,7 @@ class App extends React.Component {
             currentDir: dir,
             relativeDirs: genQuickDirs(tmp, rootDir),
         })
+        this.restoreLoadConfig()
     }
     getContent = async (name) => {
         try {
@@ -124,22 +126,13 @@ class App extends React.Component {
             await this.setState({
                 activeFile: name,
             })
-            setWindowTitle(name)
-            this.setVditorValue(data)
-        } catch (e) {
-            console.log(e)
-        }
-    }
-    setVditorValue = (data) => {
-        if (this.vditor != null) {
             this.vditor.setValue(data)
+            await setWindowTitle(name)
             this.convertImage()
-        } else {
-            setTimeout(() => {
-                this.vditor.setValue(data)
-                this.convertImage()
-            }, 300)
+        } catch (e) {
+            alert(e)
         }
+
     }
     convertImage = () => {
         setTimeout(() => {
@@ -181,22 +174,17 @@ class App extends React.Component {
         await this.loadDir(this.state.rootDir, currentDir)
     }
     loadEditor = (ele) => {
+        this.vditorEle = ele
         if (ele == null) {
             return
         }
-        let opt = {
+        this.vditor = new Vditor("container-editor", {
             height: getVditorHeight(),
             upload: {
                 handler: this.uploadImage
             },
-            cache: {
-                enable: false
-            },
-            icon: 'material',
             input: this.onInput
-        }
-       
-        this.vditor = new Vditor("container-editor", opt)
+        })
     }
     onInput = async (str) => {
         setWindowTitle(this.state.activeFile + '(有修改)')
@@ -231,6 +219,8 @@ class App extends React.Component {
         } else {
             this.openFile()
         }
+
+
     }
 
     render() {
