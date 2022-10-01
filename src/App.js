@@ -2,22 +2,19 @@ import './App.css';
 import React, { useEffect, useRef } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
 import { open } from '@tauri-apps/api/dialog';
-import { getLatestLoadDir, setLatestLoadDir, ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
+import { ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs, getRelativePath } from './util/common'
 import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle } from './util/invoke'
-import { Space, Button, Link, Layout, Drawer } from '@arco-design/web-react';
+import { Space, Button, Link, Grid , Drawer } from '@arco-design/web-react';
 import { homeDir, join, resourceDir, sep as SEP } from '@tauri-apps/api/path';
 import IconFolder from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
 import Vditor from 'vditor'
 import "vditor/dist/index.css";
 import dayjs from 'dayjs';
-import { listen } from '@tauri-apps/api/event'
-
-const Sider = Layout.Sider;
-const Content = Layout.Content;
-
+const Row = Grid.Row;
+const Col = Grid.Col;
 const QuickDir = (props) => {
     if (props.relativeDirs == undefined || props.relativeDirs.length < 1) {
         return null
@@ -38,19 +35,20 @@ const FileList = (props) => {
             <Button type="primary" onClick={props.openFile}>打开</Button>
         </div>
     }
-    return <div className="directory">
+    return <Row>
         {props.fileList.map(item => {
             if (item.item_type == 'dir') {
-                return <div className="directory-item">
+                return <Col className="directory-item" span={6}>
                     <IconFolder height={25} width={25} />
                     <span onClick={() => props.clickFile(item)}>{item.path}</span>
-                </div>
+                </Col>
             }
-            return <div className={item.abs_path == props.activeFile ? 'directory-item directory-item-md directory-item-active' : 'directory-item directory-item-md'} key={item.abs_path}>
+            return <Col className={item.abs_path == props.activeFile ? 'directory-item directory-item-active' : 'directory-item directory-item-md'} key={item.abs_path} span={6}>
+                <IconMarkdown height={25} width={25} />
                 <span onClick={() => props.clickFile(item)}>{item.path}</span>
-            </div>
+            </Col>
         })}
-    </div>
+    </Row>
 }
 
 const getVditorHeight = () => {
