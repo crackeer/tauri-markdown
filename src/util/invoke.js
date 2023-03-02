@@ -46,6 +46,20 @@ var uploadFile = async (file_name, content) => {
     return result
 }
 
+var createFile = async (file_path) => {
+    let result = await invoke('create_file', {
+        filePath : file_path, 
+    })
+    return result
+}
+
+var createDir = async (file_path) => {
+    let result = await invoke('create_dir', {
+        filePath : file_path,
+    })
+    return result
+}
+
 export {
-    writeFile, readFile, readDir, simpleReadDir, setWindowTitle, uploadFile
+    writeFile, readFile, readDir, simpleReadDir, setWindowTitle, uploadFile, createFile, createDir
 }

@@ -24,6 +24,7 @@ var fmtFileList = (fileList, currentDir) => {
 
 var genQuickDirs = (rootDir, currentDir, maxSize) => {
     let relativePath = getRelativePath(currentDir, rootDir)
+    console.log(rootDir, currentDir, relativePath)
     let parts = relativePath.split(SEP)
     let list = [
         {
@@ -42,8 +43,7 @@ var genQuickDirs = (rootDir, currentDir, maxSize) => {
         })
     }
 
-    console.log(list.length, maxSize)
-    let startAppendIndex = 1
+    let startAppendIndex = 0
     if (afterList.length > maxSize) {
         let firstIndex = afterList.length - maxSize
         list.push({

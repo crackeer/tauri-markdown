@@ -1,8 +1,7 @@
 use serde::{Serialize};
 use tauri::{InvokeError};
 use std::{
-    fs::metadata,
-    fs::{read_dir, DirEntry, File},
+    fs::{read_dir, DirEntry, File, self},
     io::{Read, Write, Bytes},
     sync::Arc,
     vec, env::join_paths, error::Error
@@ -116,3 +115,22 @@ pub fn write_media_file(file_name: String, content: Vec<u8>) -> String {
     }
     String::from("ok")
 }
+
+#[tauri::command]
+pub fn create_dir(file_path: String) -> String {
+    if let Err(err) = fs::create_dir_all(String::from(file_path)) {
+        String::from(err.to_string())
+    } else {
+        String::from("ok")
+    }
+}
+#[tauri::command]
+pub fn create_file(file_path: String) -> String {
+    if let Err(err) = File::create(String::from(file_path)) {
+        String::from(err.to_string())
+    } else {
+        String::from("ok")
+    }
+}
+
+

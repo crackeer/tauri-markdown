@@ -6,7 +6,7 @@ import { open } from '@tauri-apps/api/dialog';
 import { ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs } from './util/common'
-import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle } from './util/invoke'
+import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle, createDir, createFile } from './util/invoke'
 import { Space, Link, Grid, Button, Popconfirm, Message, Input } from '@arco-design/web-react';
 import { homeDir, join } from '@tauri-apps/api/path';
 import IconFolderSVG from './asserts/svg/folder.js';
@@ -81,7 +81,8 @@ class App extends React.Component {
             vditorHeight: 0,
             fileType: 'dir',
 
-            newDirName: ""
+            newDirName: "",
+            newFileName: ''
         }
     }
     async componentDidMount() {
@@ -221,30 +222,48 @@ class App extends React.Component {
         this.convertImage()
     }
     selectFile = async () => {
-        let currentDir = this.state.currentDir 
+        let activeFile = this.state.activeFile
         if (this.state.rootDir.length > 0) {
-            if (currentDir.length < 1) {
-                currentDir = this.state.rootDir
+            if (activeFile.length < 1) {
+                activeFile = this.state.rootDir
             }
-            await this.loadDir(currentDir)
+            await this.loadDir(activeFile, this.state.fileType)
         } else {
             this.openFile()
         }
     }
     createDir = async () => {
-        alert(this.state.newDirName)
+        let fullPath = await join(this.state.activeFile, this.state.newDirName)
+        let result = await createDir(fullPath)
+        console.log(result)
+        if (result == 'ok') {
+            Message.success("successfully created!!")
+            this.loadDir(this.state.activeFile, "dir")
+        } else {
+            Message.error(result)
+        }
+    }
+    createFile = async () => {
+        let fullPath = await join(this.state.activeFile, this.state.newFileName)
+        let result = await createFile(fullPath)
+        if (result == 'ok') {
+            Message.success("successfully created!!")
+            this.loadDir(this.state.activeFile, "dir")
+        } else {
+            Message.error(result)
+        }
     }
 
     render() {
         return (
             <div style={{ width: '90%', margin: '10px auto' }}>
-                <QuickDir relativeDirs={this.state.relativeDirs} quickSelect={this.quickSelect} addon={
+                <QuickDir relativeDirs={this.state.relativeDirs} quickSelect={this.quickSelect} addon={this.state.fileType == 'dir' ? 
                     <ButtonGroup>
                         <Popconfirm
                             title={null}
                             icon={null}
                             content={
-                                <Input placeholder="请输入文件名" value={this.state.newDirName} onChange={(e) => {
+                                <Input placeholder="请输入文件夹名" value={this.state.newDirName} onChange={(e) => {
                                     this.setState({
                                         newDirName: e
                                     })
@@ -254,8 +273,20 @@ class App extends React.Component {
                         >
                             <Button><IconFolder /></Button>
                         </Popconfirm>
-                        <Button><IconFile /></Button>
-                    </ButtonGroup>
+
+                        <Popconfirm
+                            title={null}
+                            icon={null}
+                            content={
+                                <Input placeholder="请输入文件名" value={this.state.newFileName} onChange={(e) => {
+                                    this.setState({
+                                        newFileName: e
+                                    })
+                                }} />
+                            }
+                            onOk={this.createFile}
+                        ><Button><IconFile /></Button></Popconfirm>
+                    </ButtonGroup> : null
                 } />
                 {
                     this.state.fileType != 'dir' ? <div style={{ height: this.state.vditorHeight, }} ref={this.loadEditor} id="container-editor" onKeyUp={this.handleKeyUp}></div> : <FileList fileList={this.state.fileList} currentDir={this.state.currentDir} clickFile={this.clickFile} />
