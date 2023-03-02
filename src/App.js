@@ -1,15 +1,15 @@
 import './App.css';
 import React from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
-import { IconObliqueLine } from '@arco-design/web-react/icon';
+import { IconObliqueLine, IconFolder, IconFile } from '@arco-design/web-react/icon';
 import { open } from '@tauri-apps/api/dialog';
 import { ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs } from './util/common'
 import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle } from './util/invoke'
-import { Space, Link, Grid } from '@arco-design/web-react';
-import { homeDir, join, sep as SEP } from '@tauri-apps/api/path';
-import IconFolder from './asserts/svg/folder.js';
+import { Space, Link, Grid, Button, Popconfirm, Message, Input } from '@arco-design/web-react';
+import { homeDir, join } from '@tauri-apps/api/path';
+import IconFolderSVG from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
 import Vditor from 'vditor'
 import "vditor/dist/index.css";
@@ -17,41 +17,44 @@ import dayjs from 'dayjs';
 import { listen } from '@tauri-apps/api/event'
 const Row = Grid.Row;
 const Col = Grid.Col;
-
+const ButtonGroup = Button.Group;
 const QuickDir = (props) => {
     if (props.relativeDirs == undefined || props.relativeDirs.length < 1) {
         return null
     }
     return <>
-        <div style={{ overflowX: 'scroll' }}>
-            <Space split={<IconObliqueLine />} align={'center'} size={0} style={{ marginRight: '0' }}>
-                {
-                    props.relativeDirs.map(item => {
-                        if (item.static != undefined && item.static) {
-                            return <strong style={{ fontSize: '20px' }}>{item.name}</strong>
-                        }
-                        return <Link onClick={() => props.quickSelect(item.path)} style={{ fontSize: '20px' }}>{item.name}</Link>
-                    })
-                }
-            </Space>
-        </div>
+        <Row>
+            <Col span={21}>
+                <Space split={<IconObliqueLine />} align={'center'} size={0} style={{ marginRight: '0' }}>
+                    {
+                        props.relativeDirs.map(item => {
+                            if (item.static != undefined && item.static) {
+                                return <strong style={{ fontSize: '20px' }}>{item.name}</strong>
+                            }
+                            return <Link onClick={() => props.quickSelect(item.path)} style={{ fontSize: '20px' }}>{item.name}</Link>
+                        })
+                    }
+
+                </Space>
+            </Col>
+            <Col span={3} style={{ textAlign: 'right' }}>
+                {props.addon}
+            </Col>
+        </Row>
         <hr />
     </>
 }
 const FileList = (props) => {
     return <Row className="directory">
         {props.fileList.map(item => {
-            if (item.item_type == 'dir') {
-                return <Col className="directory-item" key={item.path} span={8} onClick={() => props.clickFile(item)} >
-                    <IconFolder height={50} width={50} />
-                    <span >{item.path}</span>
-                </Col>
-            }
             return <Col className="directory-item" key={item.path} span={8} onClick={() => props.clickFile(item)} >
-                <IconMarkdown height={50} width={50} />
-                <span>{item.path}</span>
+                {
+                    item.item_type == 'dir' ? <IconFolderSVG height={50} width={50} /> : <IconMarkdown height={50} width={50} />
+                }
+                <span >{item.path}</span>
             </Col>
         })}
+        {props.addon ? props.addon : null}
     </Row>
 }
 
@@ -131,7 +134,6 @@ class App extends React.Component {
                     fileList: [],
                     relativeDirs: list,
                 })
-                console.log(data)
 
                 this.setVditorValue(data)
             } catch (e) {
@@ -165,13 +167,10 @@ class App extends React.Component {
     clickFile = async (item) => {
         let currentPath = await join(this.state.activeFile, item.path)
         await this.loadDir(currentPath, item.item_type)
-        this.restore()
-    }
-    restore = () => {
         setLoadConfig({
             rootDir: this.state.rootDir,
-            activeFile: this.state.activeFile,
-            fileType: this.state.fileType
+            activeFile: currentPath,
+            fileType: item.item_type
         })
     }
     quickSelect = async (relativePath) => {
@@ -232,9 +231,35 @@ class App extends React.Component {
     render() {
         return (
             <div style={{ width: '90%', margin: '10px auto' }}>
-                <QuickDir relativeDirs={this.state.relativeDirs} quickSelect={this.quickSelect} />
+                <QuickDir relativeDirs={this.state.relativeDirs} quickSelect={this.quickSelect} addon={
+                    <ButtonGroup>
+                        <Popconfirm
+                            focusLock
+                            content={<>
+                            <Input  allowClear placeholder='Please Enter something' />;
+                            </>}
+                            onOk={() => {
+                                Message.info({
+                                    content: 'ok',
+                                });
+                            }}
+                            onCancel={() => {
+                                Message.error({
+                                    content: 'cancel',
+                                });
+                            }}
+                        >
+                            <Button><IconFolder /></Button>
+                        </Popconfirm>
+                        <Button><IconFile /></Button>
+                    </ButtonGroup>
+                } />
                 {
-                    this.state.fileType != 'dir' ? <div style={{ height: this.state.vditorHeight, }} ref={this.loadEditor} id="container-editor" ></div> : <FileList fileList={this.state.fileList} currentDir={this.state.currentDir} clickFile={this.clickFile} />
+                    this.state.fileType != 'dir' ? <div style={{ height: this.state.vditorHeight, }} ref={this.loadEditor} id="container-editor" onKeyUp={this.handleKeyUp}></div> : <FileList fileList={this.state.fileList} currentDir={this.state.currentDir} clickFile={this.clickFile} addon={
+                        <>
+
+                        </>
+                    } />
                 }
             </div>
         )
