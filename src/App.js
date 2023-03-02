@@ -18,13 +18,15 @@ import { listen } from '@tauri-apps/api/event'
 const Row = Grid.Row;
 const Col = Grid.Col;
 const ButtonGroup = Button.Group;
+
+const QuickDirMaxLevel = 5
 const QuickDir = (props) => {
     if (props.relativeDirs == undefined || props.relativeDirs.length < 1) {
         return null
     }
     return <>
         <Row>
-            <Col span={21}>
+            <Col span={20}>
                 <Space split={<IconObliqueLine />} align={'center'} size={0} style={{ marginRight: '0' }}>
                     {
                         props.relativeDirs.map(item => {
@@ -37,7 +39,7 @@ const QuickDir = (props) => {
 
                 </Space>
             </Col>
-            <Col span={3} style={{ textAlign: 'right' }}>
+            <Col span={4} style={{ textAlign: 'right' }}>
                 {props.addon}
             </Col>
         </Row>
@@ -78,6 +80,8 @@ class App extends React.Component {
             relativeDirs: [],
             vditorHeight: 0,
             fileType: 'dir',
+
+            newDirName: ""
         }
     }
     async componentDidMount() {
@@ -121,12 +125,12 @@ class App extends React.Component {
                 fileList: fileList,
                 activeFile: activeFile,
                 fileType: fileType,
-                relativeDirs: genQuickDirs(this.state.rootDir, activeFile),
+                relativeDirs: genQuickDirs(this.state.rootDir, activeFile, QuickDirMaxLevel),
             })
         } else {
             try {
                 let data = await readFile(activeFile)
-                let list = genQuickDirs(this.state.rootDir, activeFile)
+                let list = genQuickDirs(this.state.rootDir, activeFile, QuickDirMaxLevel)
                 list[list.length - 1].static = true
                 await this.setState({
                     activeFile: activeFile,
@@ -217,7 +221,7 @@ class App extends React.Component {
         this.convertImage()
     }
     selectFile = async () => {
-        let currentDir = this.state.currentDir
+        let currentDir = this.state.currentDir 
         if (this.state.rootDir.length > 0) {
             if (currentDir.length < 1) {
                 currentDir = this.state.rootDir
@@ -227,6 +231,9 @@ class App extends React.Component {
             this.openFile()
         }
     }
+    createDir = async () => {
+        alert(this.state.newDirName)
+    }
 
     render() {
         return (
@@ -234,20 +241,16 @@ class App extends React.Component {
                 <QuickDir relativeDirs={this.state.relativeDirs} quickSelect={this.quickSelect} addon={
                     <ButtonGroup>
                         <Popconfirm
-                            focusLock
-                            content={<>
-                            <Input  allowClear placeholder='Please Enter something' />;
-                            </>}
-                            onOk={() => {
-                                Message.info({
-                                    content: 'ok',
-                                });
-                            }}
-                            onCancel={() => {
-                                Message.error({
-                                    content: 'cancel',
-                                });
-                            }}
+                            title={null}
+                            icon={null}
+                            content={
+                                <Input placeholder="请输入文件名" value={this.state.newDirName} onChange={(e) => {
+                                    this.setState({
+                                        newDirName: e
+                                    })
+                                }} />
+                            }
+                            onOk={this.createDir}
                         >
                             <Button><IconFolder /></Button>
                         </Popconfirm>
@@ -255,11 +258,7 @@ class App extends React.Component {
                     </ButtonGroup>
                 } />
                 {
-                    this.state.fileType != 'dir' ? <div style={{ height: this.state.vditorHeight, }} ref={this.loadEditor} id="container-editor" onKeyUp={this.handleKeyUp}></div> : <FileList fileList={this.state.fileList} currentDir={this.state.currentDir} clickFile={this.clickFile} addon={
-                        <>
-
-                        </>
-                    } />
+                    this.state.fileType != 'dir' ? <div style={{ height: this.state.vditorHeight, }} ref={this.loadEditor} id="container-editor" onKeyUp={this.handleKeyUp}></div> : <FileList fileList={this.state.fileList} currentDir={this.state.currentDir} clickFile={this.clickFile} />
                 }
             </div>
         )
