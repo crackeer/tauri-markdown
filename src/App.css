@@ -43,10 +43,6 @@ img {
     padding-left: 5px;
 }
 
-.directory {
-    padding-top: 1px;
-    padding-left: 15px;
-}
 
 .directory-item {
     padding-bottom: 8px;
@@ -69,11 +65,6 @@ img {
     font-weight: bold;
     color: red;
 }
-
-.directory-item-md {
-    padding-left: 25px;
-}
-
 .empty-directory {
     margin: 0 auto;
     text-align: center;
