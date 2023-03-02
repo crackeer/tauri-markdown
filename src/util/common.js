@@ -21,7 +21,8 @@ var fmtFileList = (fileList, currentDir) => {
     return fileList
 }
 
-var genQuickDirs = (relativePath, rootDir) => {
+var genQuickDirs = (rootDir, currentDir) => {
+    let relativePath = getRelativePath(currentDir, rootDir)
     let parts = relativePath.split(SEP)
     let rootName = rootDir.replaceAll('\\', '/')
     let list = [
@@ -39,12 +40,10 @@ var genQuickDirs = (relativePath, rootDir) => {
             name: parts[i]
         })
     }
-    console.log(relativePath, rootDir, list)
     return list
 }
 
 var getRelativePath = (currentDir, rootDir) => {
-    console.log(currentDir, rootDir)
     if (currentDir == rootDir) {
         return ''
     }

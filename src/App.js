@@ -1,101 +1,100 @@
 import './App.css';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
+import { IconObliqueLine } from '@arco-design/web-react/icon';
 import { open } from '@tauri-apps/api/dialog';
-import { getLatestLoadDir, setLatestLoadDir, ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
+import { ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
-import { fmtFileList, genQuickDirs, getRelativePath } from './util/common'
+import { fmtFileList, genQuickDirs } from './util/common'
 import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle } from './util/invoke'
-import { Space, Button, Link, Layout, Drawer } from '@arco-design/web-react';
-import { homeDir, join, resourceDir, sep as SEP } from '@tauri-apps/api/path';
+import { Space, Link, Grid } from '@arco-design/web-react';
+import { homeDir, join, sep as SEP } from '@tauri-apps/api/path';
 import IconFolder from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
 import Vditor from 'vditor'
 import "vditor/dist/index.css";
 import dayjs from 'dayjs';
 import { listen } from '@tauri-apps/api/event'
-
-const Sider = Layout.Sider;
-const Content = Layout.Content;
+const Row = Grid.Row;
+const Col = Grid.Col;
 
 const QuickDir = (props) => {
     if (props.relativeDirs == undefined || props.relativeDirs.length < 1) {
         return null
     }
-    return <div>
-        <Space wrap size={[1, 1]} split={'/'}>
-            {
-                props.relativeDirs.map(item => {
-                    return <Link onClick={() => props.quickSelect(item.path)}>{item.name}</Link>
-                })
-            }
-        </Space>
-    </div>
+    return <>
+        <div style={{ overflowX: 'scroll' }}>
+            <Space split={<IconObliqueLine />} align={'center'} size={0} style={{ marginRight: '0' }}>
+                {
+                    props.relativeDirs.map(item => {
+                        if (item.static != undefined && item.static) {
+                            return <strong style={{ fontSize: '20px' }}>{item.name}</strong>
+                        }
+                        return <Link onClick={() => props.quickSelect(item.path)} style={{ fontSize: '20px' }}>{item.name}</Link>
+                    })
+                }
+            </Space>
+        </div>
+        <hr />
+    </>
 }
 const FileList = (props) => {
-    if (props.rootDir == undefined || props.rootDir.length < 1) {
-        return <div>
-            <Button type="primary" onClick={props.openFile}>打开</Button>
-        </div>
-    }
-    return <div className="directory">
+    return <Row className="directory">
         {props.fileList.map(item => {
             if (item.item_type == 'dir') {
-                return <div className="directory-item">
-                    <IconFolder height={25} width={25} />
-                    <span onClick={() => props.clickFile(item)}>{item.path}</span>
-                </div>
+                return <Col className="directory-item" key={item.path} span={8} onClick={() => props.clickFile(item)} >
+                    <IconFolder height={50} width={50} />
+                    <span >{item.path}</span>
+                </Col>
             }
-            return <div className={item.abs_path == props.activeFile ? 'directory-item directory-item-md directory-item-active' : 'directory-item directory-item-md'} key={item.abs_path}>
-                <span onClick={() => props.clickFile(item)}>{item.path}</span>
-            </div>
+            return <Col className="directory-item" key={item.path} span={8} onClick={() => props.clickFile(item)} >
+                <IconMarkdown height={50} width={50} />
+                <span>{item.path}</span>
+            </Col>
         })}
-    </div>
+    </Row>
 }
 
-const getVditorHeight = () => {
+const getMDHeight = () => {
     return window.innerHeight - 10
 }
 
 
 class App extends React.Component {
     vditor = null
-    vditorEle = null
     constructor(props) {
-        super(props); // 用于父子组件传值
+        super(props);
         this.state = {
 
             rootDir: '',
-            currentDir: '',
             fileList: [],
 
-            visible: false,
-            cursor: null,
             activeFile: '',
             changed: false,
 
             relativeDirs: [],
-            vditorHeight: 0
+            vditorHeight: 0,
+            fileType: 'dir',
         }
     }
     async componentDidMount() {
         await ensureConfigDir()
         let object = await getLoadConfig()
         if (object != undefined) {
-            this.getContent(object.activeFile)
-            this.setState(object)
+            await this.setState(object)
         }
+        this.selectFile()
         window.addEventListener('resize', this.onResizeWindow)
     }
     onResizeWindow = () => {
         this.setState({
-            vditorHeight: getVditorHeight()
+            vditorHeight: getMDHeight()
         })
-        this.resetVditoHeight()
+        this.resetMDHeight()
     }
-    resetVditoHeight = () => {
+    resetMDHeight = () => {
         this.setState({
-            vditorHeight: getVditorHeight()
+            vditorHeight: getMDHeight()
         })
     }
     openFile = async () => {
@@ -105,41 +104,47 @@ class App extends React.Component {
             multiple: false,
             defaultPath: homeDirPath,
         });
-        await this.loadDir(selected, selected)
-    }
-    loadDir = async (rootDir, dir) => {
-        let fileList = await simpleReadDir(dir, ".md")
-        fileList = fmtFileList(fileList, this.state.currentDir)
-        let tmp = getRelativePath(dir, rootDir)
         await this.setState({
-            rootDir: rootDir,
-            fileList: fileList,
-            currentDir: dir,
-            relativeDirs: genQuickDirs(tmp, rootDir),
+            rootDir: selected,
+            relativeDirs: [],
         })
+        await this.loadDir(selected, "dir")
     }
-    getContent = async (name) => {
-        try {
-            let data = await readFile(name)
+    loadDir = async (activeFile, fileType) => {
+        if (fileType == "dir") {
+            let fileList = await simpleReadDir(activeFile, ".md")
+            fileList = fmtFileList(fileList, activeFile)
             await this.setState({
-                activeFile: name,
+                fileList: fileList,
+                activeFile: activeFile,
+                fileType: fileType,
+                relativeDirs: genQuickDirs(this.state.rootDir, activeFile),
             })
-            setWindowTitle(name)
-            this.setVditorValue(data)
-        } catch (e) {
-            console.log(e)
+        } else {
+            try {
+                let data = await readFile(activeFile)
+                let list = genQuickDirs(this.state.rootDir, activeFile)
+                list[list.length - 1].static = true
+                await this.setState({
+                    activeFile: activeFile,
+                    fileType: fileType,
+                    fileList: [],
+                    relativeDirs: list,
+                })
+                console.log(data)
+
+                this.setVditorValue(data)
+            } catch (e) {
+                console.log(e)
+            }
         }
+        setWindowTitle(activeFile)
     }
     setVditorValue = (data) => {
-        if (this.vditor != null) {
+        setTimeout(() => {
             this.vditor.setValue(data)
             this.convertImage()
-        } else {
-            setTimeout(() => {
-                this.vditor.setValue(data)
-                this.convertImage()
-            }, 300)
-        }
+        }, 300)
     }
     convertImage = () => {
         setTimeout(() => {
@@ -158,19 +163,15 @@ class App extends React.Component {
         }
     }
     clickFile = async (item) => {
-        let currentPath = await join(this.state.currentDir, item.path)
-        if (item.item_type == 'dir') {
-            await this.loadDir(this.state.rootDir, currentPath)
-        } else {
-            await this.getContent(currentPath)
-        }
-        this.restoreLoadConfig()
+        let currentPath = await join(this.state.activeFile, item.path)
+        await this.loadDir(currentPath, item.item_type)
+        this.restore()
     }
-    restoreLoadConfig = () => {
+    restore = () => {
         setLoadConfig({
             rootDir: this.state.rootDir,
-            currentDir: this.state.currentDir,
-            activeFile: this.state.activeFile
+            activeFile: this.state.activeFile,
+            fileType: this.state.fileType
         })
     }
     quickSelect = async (relativePath) => {
@@ -178,14 +179,14 @@ class App extends React.Component {
         if (relativePath == this.state.rootDir) {
             currentDir = this.state.rootDir
         }
-        await this.loadDir(this.state.rootDir, currentDir)
+        await this.loadDir(currentDir, "dir")
     }
     loadEditor = (ele) => {
         if (ele == null) {
             return
         }
         let opt = {
-            height: getVditorHeight(),
+            height: getMDHeight(),
             upload: {
                 handler: this.uploadImage
             },
@@ -195,7 +196,7 @@ class App extends React.Component {
             icon: 'material',
             input: this.onInput
         }
-       
+
         this.vditor = new Vditor("container-editor", opt)
     }
     onInput = async (str) => {
@@ -217,17 +218,12 @@ class App extends React.Component {
         this.convertImage()
     }
     selectFile = async () => {
-        await this.setState({
-            visible: true
-        })
         let currentDir = this.state.currentDir
-        let rootDir = this.state.rootDir
         if (this.state.rootDir.length > 0) {
             if (currentDir.length < 1) {
-                currentDir = rootDir
+                currentDir = this.state.rootDir
             }
-            await this.loadDir(rootDir, currentDir)
-            return
+            await this.loadDir(currentDir)
         } else {
             this.openFile()
         }
@@ -235,31 +231,11 @@ class App extends React.Component {
 
     render() {
         return (
-            <div className="app" onKeyUp={this.handleKeyUp}>
-                <div style={{ margin: '5px auto', width: '80%' }}>
-                    <div style={{ height: this.state.vditorHeight, }} ref={this.loadEditor} id="container-editor"></div>
-                </div>
-                <div style={{ position: 'fixed', right: '10px', top: '10px' }}>
-                    <Button type="primary" onClick={this.selectFile}>打开</Button>
-                </div>
-
-                <Drawer
-                    title={<QuickDir relativeDirs={this.state.relativeDirs} quickSelect={this.quickSelect} />}
-                    visible={this.state.visible}
-                    closable={false}
-                    height={'70%'}
-                    footer={null}
-                    escToExit={true}
-                    maskClosable={true}
-                    placement={'bottom'}
-                    onCancel={() => {
-                        this.setState({
-                            visible: false
-                        })
-                    }}
-                >
-                    <FileList fileList={this.state.fileList} rootDir={this.state.rootDir} activeFile={this.state.activeFile} currentDir={this.state.currentDir} openFile={this.openFile} clickFile={this.clickFile} />
-                </Drawer>
+            <div style={{ width: '90%', margin: '10px auto' }}>
+                <QuickDir relativeDirs={this.state.relativeDirs} quickSelect={this.quickSelect} />
+                {
+                    this.state.fileType != 'dir' ? <div style={{ height: this.state.vditorHeight, }} ref={this.loadEditor} id="container-editor" ></div> : <FileList fileList={this.state.fileList} currentDir={this.state.currentDir} clickFile={this.clickFile} />
+                }
             </div>
         )
     }
