@@ -3,19 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@aomao/engine": "^2.9.40",
-    "@aomao/toolbar": "^2.10.5",
     "@arco-design/web-react": "2.44.0",
     "@tauri-apps/api": "^1.0.2",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.3.0",
-    "@testing-library/user-event": "^13.5.0",
     "dayjs": "^1.11.5",
     "editor.md": "^1.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
-    "react-treebeard": "^3.2.4",
     "vditor": "^3.8.17",
     "web-vitals": "^2.1.4"
   },
@@ -50,7 +46,6 @@
     "@bytemd/plugin-mermaid": "^1.17.2",
     "@bytemd/react": "^1.17.2",
     "@tauri-apps/cli": "^1.0.5",
-    "antd": "^4.23.1",
     "cross-env": "^7.0.3"
   }
 }
