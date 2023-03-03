@@ -7,7 +7,7 @@ import { ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConf
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs } from './util/common'
 import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle, createDir, createFile } from './util/invoke'
-import { Space, Link, Grid, Button, Popconfirm, Message, Input } from '@arco-design/web-react';
+import { Space, Link, Grid, Button, Popconfirm, Message, Input, Modal } from '@arco-design/web-react';
 import { homeDir, join } from '@tauri-apps/api/path';
 import IconFolderSVG from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
@@ -161,13 +161,17 @@ class App extends React.Component {
     handleKeyUp = async (event) => {
         if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
-            let result = await writeFile(this.state.activeFile, this.vditor.getValue())
-            await this.setState({
-                changed: false,
-            })
-            await setWindowTitle(this.state.activeFile)
-            await deleteActiveFileCache(this.state.activeFile)
+            this.saveFile();
         }
+    }
+    saveFile = async () => {
+        let result = await writeFile(this.state.activeFile, this.vditor.getValue())
+        await this.setState({
+            changed: false,
+        })
+        Message.success("保存成功")
+        await setWindowTitle(this.state.activeFile)
+        await deleteActiveFileCache(this.state.activeFile)
     }
     clickFile = async (item) => {
         let currentPath = await join(this.state.activeFile, item.path)
@@ -179,11 +183,30 @@ class App extends React.Component {
         })
     }
     quickSelect = async (relativePath) => {
+        if(this.state.changed) {
+            return await this.ask2Save(relativePath)
+        }
         let currentDir = await join(this.state.rootDir, relativePath)
         if (relativePath == this.state.rootDir) {
             currentDir = this.state.rootDir
         }
         await this.loadDir(currentDir, "dir")
+    }
+    ask2Save = async (relativePath) => {
+        await Modal.confirm({
+            simple : true,
+            title : "保存提示",
+            content : "当前编辑的文档还未保存？请选择",
+            okText : "是，立马保存",
+            cancelText : "否，我要放弃",
+            onOk : async () => {
+                await this.saveFile()
+                await this.quickSelect(relativePath)
+            },
+            onCancel : async () => {
+                await this.quickSelect(relativePath)
+            }
+        })
     }
     loadEditor = (ele) => {
         if (ele == null) {
@@ -204,6 +227,9 @@ class App extends React.Component {
         this.vditor = new Vditor("container-editor", opt)
     }
     onInput = async (str) => {
+        await this.setState({
+            changed : true
+        })
         setWindowTitle(this.state.activeFile + '(有修改)')
         await setActiveFileCache(this.state.activeFile, str)
     }
