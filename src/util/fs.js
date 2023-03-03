@@ -84,7 +84,7 @@ var ensureBaseDir = async () => {
     }
 }
 
-var ensureConfigDir = async () => {
+var mkConfigDir = async () => {
     try {
         await readDir('', { dir: BaseDirectory.Config, recursive: false });
     } catch(e) {
@@ -94,5 +94,5 @@ var ensureConfigDir = async () => {
 
 
 export {
-    getLatestLoadDir, setLatestLoadDir, ensureBaseDir, ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig
+    getLatestLoadDir, setLatestLoadDir, ensureBaseDir, mkConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig
 }

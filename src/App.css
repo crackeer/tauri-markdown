@@ -16,7 +16,7 @@ body {
     height: 95vh;
 }
 
-.bytemd {
+app.bytemd {
     height: calc(100vh - 200px);
 }
 

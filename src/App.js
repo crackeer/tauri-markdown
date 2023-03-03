@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
 import { IconObliqueLine, IconFolder, IconFile, IconEdit, IconSave } from '@arco-design/web-react/icon';
 import { open } from '@tauri-apps/api/dialog';
-import { ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
+import { mkConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs } from './util/common'
 import { writeFile, readFile, uploadFile, simpleReadDir, setWindowTitle, createDir, createFile } from './util/invoke'
@@ -119,19 +119,15 @@ class App extends React.Component {
 
             newDirName: "",
             newFileName: '',
-            mode: 'view'
+            mode: ''
         }
     }
     async componentDidMount() {
-        await ensureConfigDir()
+        console.log(this.state)
+        await mkConfigDir()
         let object = await getLoadConfig()
-        if (object != undefined) {
-            await this.setState(object)
-        }
-        await this.setState({
-            rootDir: "/Users/liuhu016"
-        })
-        this.selectFile()
+        this.initSelectFile(object)
+       
         window.addEventListener('resize', this.onResizeWindow)
     }
     onResizeWindow = () => {
@@ -187,6 +183,11 @@ class App extends React.Component {
                 console.log(e)
             }
         }
+        setLoadConfig({
+            rootDir: this.state.rootDir,
+            activeFile: activeFile,
+            fileType: fileType
+        })
         setWindowTitle(activeFile)
     }
     renderMD = async (data) => {
@@ -215,6 +216,9 @@ class App extends React.Component {
         })
     }
     saveFile = async () => {
+        if(!this.state.changed) {
+            return
+        }
         let result = await writeFile(this.state.activeFile, this.state.value)
         await this.setState({
             changed: false,
@@ -226,11 +230,6 @@ class App extends React.Component {
     clickFile = async (item) => {
         let currentPath = await join(this.state.activeFile, item.path)
         await this.loadDir(currentPath, item.item_type)
-        setLoadConfig({
-            rootDir: this.state.rootDir,
-            activeFile: currentPath,
-            fileType: item.item_type
-        })
     }
     quickSelect = async (relativePath) => {
         if (this.state.changed) {
@@ -266,7 +265,6 @@ class App extends React.Component {
         await setActiveFileCache(this.state.activeFile, str)
     }
     uploadImage = async (files) => {
-        console.log(files, files.length)
         let buffer = await files[0].arrayBuffer()
         let view = new Uint8Array(buffer);
         let list = []
@@ -279,15 +277,20 @@ class App extends React.Component {
         await this.vditor.insertValue('![' + fileName + '](' + fileName + ')', true)
         this.convertImage()
     }
-    selectFile = async () => {
-        let activeFile = this.state.activeFile
-        if (this.state.rootDir.length > 0) {
-            if (activeFile.length < 1) {
-                activeFile = this.state.rootDir
-            }
-            await this.loadDir(activeFile, this.state.fileType)
-        } else {
+    initSelectFile = async (object) => {
+        if(object == undefined) {
             this.openFile()
+            return
+        }
+        let activeFile = object.activeFile
+        if (object.rootDir.length > 0) {
+            if (activeFile.length < 1) {
+                activeFile = object.rootDir
+            }
+            await this.setState({
+                rootDir : object.rootDir,
+            })
+            await this.loadDir(activeFile, object.fileType)
         }
     }
     createDir = async (newDir) => {
@@ -314,7 +317,7 @@ class App extends React.Component {
 
     render() {
         return (
-            <div style={{ width: '90%', margin: '10px auto' }} onKeyUp={this.handleKeyUp}>
+            <div style={{ width: '90%', margin: '10px auto' }} onKeyUp={this.handleKeyUp} id="app">
                 <QuickDir
                     relativeDirs={this.state.relativeDirs}
                     quickSelect={this.quickSelect}
