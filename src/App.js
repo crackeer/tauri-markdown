@@ -34,15 +34,15 @@ const QuickDir = (props) => {
                     {
                         props.relativeDirs.map(item => {
                             if (item.static != undefined && item.static) {
-                                return <>
+                                return <span key={item.path}>
                                     <strong style={{ fontSize: '20px', marginRight: '5px' }}>{item.name}</strong>
                                     {
                                         props.mode == 'view' ? <IconEdit onClick={props.setEditMode} /> : <IconSave onClick={props.saveContent} />
                                     }
 
-                                </>
+                                </span>
                             }
-                            return <Link onClick={() => props.quickSelect(item.path)} style={{ fontSize: '20px' }}>{item.name}</Link>
+                            return <Link onClick={() => props.quickSelect(item.path)} style={{ fontSize: '20px' }} key={item.path}>{item.name}</Link>
                         })
                     }
 
@@ -127,7 +127,7 @@ class App extends React.Component {
         await mkConfigDir()
         let object = await getLoadConfig()
         this.initSelectFile(object)
-       
+        this.listen()
         window.addEventListener('resize', this.onResizeWindow)
     }
     onResizeWindow = () => {
@@ -175,10 +175,10 @@ class App extends React.Component {
                     fileType: fileType,
                     fileList: [],
                     relativeDirs: list,
+                    value: data,
                     mode: 'view'
                 })
 
-                this.renderMD(data)
             } catch (e) {
                 console.log(e)
             }
@@ -186,14 +186,10 @@ class App extends React.Component {
         setLoadConfig({
             rootDir: this.state.rootDir,
             activeFile: activeFile,
-            fileType: fileType
+            fileType: fileType,
+            mode: this.state.mode,
         })
         setWindowTitle(activeFile)
-    }
-    renderMD = async (data) => {
-        await this.setState({
-            value: data
-        })
     }
     convertImage = () => {
         setTimeout(() => {
@@ -212,11 +208,11 @@ class App extends React.Component {
     saveFile2View = async () => {
         await this.saveFile()
         this.setState({
-            mode : 'view'
+            mode: 'view'
         })
     }
     saveFile = async () => {
-        if(!this.state.changed) {
+        if (!this.state.changed) {
             return
         }
         let result = await writeFile(this.state.activeFile, this.state.value)
@@ -261,7 +257,7 @@ class App extends React.Component {
         await this.setState({
             changed: true
         })
-        setWindowTitle(this.state.activeFile + '(有修改)')
+        setWindowTitle(this.state.activeFile + '(changed)')
         await setActiveFileCache(this.state.activeFile, str)
     }
     uploadImage = async (files) => {
@@ -278,7 +274,7 @@ class App extends React.Component {
         this.convertImage()
     }
     initSelectFile = async (object) => {
-        if(object == undefined) {
+        if (object == undefined || object.rootDir == undefined || object.rootDir.length < 1) {
             this.openFile()
             return
         }
@@ -288,7 +284,7 @@ class App extends React.Component {
                 activeFile = object.rootDir
             }
             await this.setState({
-                rootDir : object.rootDir,
+                rootDir: object.rootDir,
             })
             await this.loadDir(activeFile, object.fileType)
         }
@@ -313,6 +309,11 @@ class App extends React.Component {
         } else {
             Message.error(result)
         }
+    }
+    listen = async () => {
+        const unlisten = await listen('open_folder', (event) => {
+            this.openFile()
+        })
     }
 
     render() {

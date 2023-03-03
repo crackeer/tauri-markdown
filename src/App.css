@@ -1,23 +1,9 @@
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
 body {
     font-size: 16px;
 }
 
-.app .bytemd {
+#app .bytemd {
     height: 95vh;
-}
-
-app.bytemd {
-    height: calc(100vh - 200px);
 }
 
 img {
@@ -25,13 +11,6 @@ img {
     height: 60%;
     text-align: center;
 }
-
-
-
-.quick-directory {
-    padding-left: 5px;
-}
-
 
 .directory-item {
     padding-bottom: 8px;
@@ -48,15 +27,4 @@ img {
     color: red;
     cursor: pointer;
     background-color: #e4e1e1;
-}
-
-.directory-item-active {
-    font-weight: bold;
-    color: red;
-}
-
-.empty-directory {
-    margin: 0 auto;
-    text-align: center;
-    padding-top: 40%;
 }
