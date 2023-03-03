@@ -1,8 +1,7 @@
 import './App.css';
-import 'bytemd/dist/index.css'
 import React, { useState } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
-import { IconObliqueLine, IconFolder, IconFile, IconEdit, IconSave } from '@arco-design/web-react/icon';
+import { IconObliqueLine, IconFolder, IconFile } from '@arco-design/web-react/icon';
 import { open } from '@tauri-apps/api/dialog';
 import { ensureConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
@@ -14,14 +13,11 @@ import IconFolderSVG from './asserts/svg/folder.js';
 import IconMarkdown from './asserts/svg/markdown';
 import dayjs from 'dayjs';
 import { listen } from '@tauri-apps/api/event'
-import { Editor, Viewer } from '@bytemd/react'
-import highlight from '@bytemd/plugin-highlight';
-import mermaid from '@bytemd/plugin-mermaid';
-import gfm from '@bytemd/plugin-gfm'
+import editormd from "editor.md"
 const Row = Grid.Row;
 const Col = Grid.Col;
 const ButtonGroup = Button.Group;
-const plugins = [gfm(), highlight(), mermaid()]
+
 const QuickDirMaxLevel = 5
 const QuickDir = (props) => {
     if (props.relativeDirs == undefined || props.relativeDirs.length < 1) {
@@ -34,13 +30,7 @@ const QuickDir = (props) => {
                     {
                         props.relativeDirs.map(item => {
                             if (item.static != undefined && item.static) {
-                                return <>
-                                    <strong style={{ fontSize: '20px', marginRight: '5px' }}>{item.name}</strong>
-                                    {
-                                        props.mode == 'view' ? <IconEdit onClick={props.setEditMode} /> : <IconSave onClick={props.saveContent} />
-                                    }
-
-                                </>
+                                return <strong style={{ fontSize: '20px' }}>{item.name}</strong>
                             }
                             return <Link onClick={() => props.quickSelect(item.path)} style={{ fontSize: '20px' }}>{item.name}</Link>
                         })
@@ -110,7 +100,6 @@ class App extends React.Component {
             fileList: [],
 
             activeFile: '',
-            value: '',
             changed: false,
 
             relativeDirs: [],
@@ -118,8 +107,7 @@ class App extends React.Component {
             fileType: 'dir',
 
             newDirName: "",
-            newFileName: '',
-            mode: 'view'
+            newFileName: ''
         }
     }
     async componentDidMount() {
@@ -128,9 +116,6 @@ class App extends React.Component {
         if (object != undefined) {
             await this.setState(object)
         }
-        await this.setState({
-            rootDir: "/Users/liuhu016"
-        })
         this.selectFile()
         window.addEventListener('resize', this.onResizeWindow)
     }
@@ -167,7 +152,6 @@ class App extends React.Component {
                 activeFile: activeFile,
                 fileType: fileType,
                 relativeDirs: genQuickDirs(this.state.rootDir, activeFile, QuickDirMaxLevel),
-                mode: 'view'
             })
         } else {
             try {
@@ -179,20 +163,20 @@ class App extends React.Component {
                     fileType: fileType,
                     fileList: [],
                     relativeDirs: list,
-                    mode: 'view'
                 })
 
-                this.renderMD(data)
+                this.setVditorValue(data)
             } catch (e) {
                 console.log(e)
             }
         }
         setWindowTitle(activeFile)
     }
-    renderMD = async (data) => {
-        await this.setState({
-            value: data
-        })
+    setVditorValue = (data) => {
+        setTimeout(() => {
+            this.vditor.setValue(data)
+            this.convertImage()
+        }, 300)
     }
     convertImage = () => {
         setTimeout(() => {
@@ -200,22 +184,13 @@ class App extends React.Component {
         }, 1000)
     }
     handleKeyUp = async (event) => {
-        if (this.state.fileType == 'dir' || this.state.mode == 'view') {
-            return
-        }
         if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
             this.saveFile();
         }
     }
-    saveFile2View = async () => {
-        await this.saveFile()
-        this.setState({
-            mode : 'view'
-        })
-    }
     saveFile = async () => {
-        let result = await writeFile(this.state.activeFile, this.state.value)
+        let result = await writeFile(this.state.activeFile, this.vditor.getValue())
         await this.setState({
             changed: false,
         })
@@ -257,6 +232,24 @@ class App extends React.Component {
                 await this.quickSelect(relativePath)
             }
         })
+    }
+    loadEditor = (ele) => {
+        if (ele == null) {
+            return
+        }
+        let opt = {
+            height: getMDHeight(),
+            upload: {
+                handler: this.uploadImage
+            },
+            cache: {
+                enable: false
+            },
+            icon: 'material',
+            input: this.onInput
+        }
+
+        this.vditor = new Vditor("container-editor", opt)
     }
     onInput = async (str) => {
         await this.setState({
@@ -314,42 +307,17 @@ class App extends React.Component {
 
     render() {
         return (
-            <div style={{ width: '90%', margin: '10px auto' }} onKeyUp={this.handleKeyUp}>
-                <QuickDir
-                    relativeDirs={this.state.relativeDirs}
-                    quickSelect={this.quickSelect}
-                    mode={this.state.mode}
-                    setEditMode={() => {
-                        this.setState({
-                            mode: 'edit'
-                        })
-                    }}
-                    saveContent={this.saveFile2View}
-                    addon={this.state.fileType == 'dir' ?
-                        <CreateNew createDir={this.createDir} createFile={this.createFile} /> : null
-                    } />
+            <div style={{ width: '90%', margin: '10px auto' }}>
+                <QuickDir relativeDirs={this.state.relativeDirs} quickSelect={this.quickSelect} addon={this.state.fileType == 'dir' ?
+                    <CreateNew createDir={this.createDir} createFile={this.createFile} /> : null
+                } />
                 {
-                    this.state.fileType == 'dir' ? <FileList fileList={this.state.fileList} currentDir={this.state.currentDir} clickFile={this.clickFile} /> : null
+                    this.state.fileType != 'dir' ? <div style={{ height: this.state.vditorHeight, }} ref={this.loadEditor} id="container-editor" onKeyUp={this.handleKeyUp}></div> : <FileList fileList={this.state.fileList} currentDir={this.state.currentDir} clickFile={this.clickFile} />
                 }
-
-                {
-                    this.state.fileType == 'file' && this.state.mode == 'edit' ? <Editor
-                        value={this.state.value}
-                        plugins={plugins}
-                        onChange={(v) => {
-                            this.setState({
-                                value: v
-                            })
-                        }} /> : null
-                }
-
-                {
-                    this.state.fileType == 'file' && this.state.mode == 'view' ? <Viewer value={this.state.value} plugins={plugins} /> : null
-                }
-
             </div>
         )
     }
 }
 
 export default App
+

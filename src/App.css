@@ -8,21 +8,16 @@
     }
 }
 
+body {
+    font-size: 16px;
+}
+
 .app .bytemd {
     height: 95vh;
 }
 
-.app .title {
-    height: 20px;
-}
-
-.app ul {
-    height: auto;
-}
-
-#list {
-    height: '100%';
-    overflow: hidden;
+.bytemd {
+    height: calc(100vh - 200px);
 }
 
 img {
@@ -31,13 +26,7 @@ img {
     text-align: center;
 }
 
-.vditor-reset {
-    padding: 10px 60px !important;
-}
 
-.vditor-toolbar {
-    padding-left: 0 !important;
-}
 
 .quick-directory {
     padding-left: 5px;
@@ -58,13 +47,14 @@ img {
 .directory-item:hover {
     color: red;
     cursor: pointer;
-    background-color:#e4e1e1;
+    background-color: #e4e1e1;
 }
 
 .directory-item-active {
     font-weight: bold;
     color: red;
 }
+
 .empty-directory {
     margin: 0 auto;
     text-align: center;
