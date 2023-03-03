@@ -12,12 +12,9 @@ body {
     font-size: 16px;
 }
 
-.app .bytemd {
-    height: 95vh;
-}
 
-app.bytemd {
-    height: calc(100vh - 200px);
+#app .bytemd {
+    height: 98vh
 }
 
 img {

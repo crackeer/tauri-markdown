@@ -99,7 +99,6 @@ const getMDHeight = () => {
     return window.innerHeight - 10
 }
 
-
 class App extends React.Component {
     vditor = null
     constructor(props) {
@@ -123,7 +122,6 @@ class App extends React.Component {
         }
     }
     async componentDidMount() {
-        console.log(this.state)
         await mkConfigDir()
         let object = await getLoadConfig()
         this.initSelectFile(object)
@@ -278,7 +276,8 @@ class App extends React.Component {
         this.convertImage()
     }
     initSelectFile = async (object) => {
-        if(object == undefined) {
+        console.log(object)
+        if(object == undefined || object.rootDir.length < 1) {
             this.openFile()
             return
         }
@@ -339,10 +338,9 @@ class App extends React.Component {
                     this.state.fileType == 'file' && this.state.mode == 'edit' ? <Editor
                         value={this.state.value}
                         plugins={plugins}
+                        mode="auto"
                         onChange={(v) => {
-                            this.setState({
-                                value: v
-                            })
+                            this.onInput(v)
                         }} /> : null
                 }
 
