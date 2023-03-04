@@ -1,11 +1,9 @@
-use serde::{Serialize};
-use tauri::{InvokeError};
+use serde::Serialize;
 use std::{
-    fs::{read_dir, DirEntry, File, self},
-    io::{Read, Write, Bytes},
-    sync::Arc,
-    vec, env::join_paths, error::Error
+    fs::{self, read_dir, File},
+    io::{ Read, Write},
 };
+use tauri::InvokeError;
 
 #[tauri::command]
 pub fn get_file_content(name: String) -> Result<String, InvokeError> {
@@ -28,39 +26,8 @@ pub fn write_file(name: String, content: String) -> String {
         return res.err().unwrap().to_string();
     }
     let mut buffer = res.unwrap();
-    buffer.write(content.as_bytes());
+    _ = buffer.write(content.as_bytes());
     String::from("ok")
-}
-
-#[tauri::command]
-pub fn get_file_list(dir: String, ext: String) -> Vec<String> {
-    let mut dir_vec: Vec<String> = Vec::new();
-    let mut list: Vec<String> = Vec::new();
-    println!("{}", dir);
-    dir_vec.push(dir);
-
-    let mut cur_index: usize = 0;
-    while cur_index < dir_vec.len() {
-        let entry = read_dir(dir_vec.get(cur_index).unwrap().to_string());
-        if let Ok(data) = entry {
-            for item in data.into_iter() {
-                if let Ok(dataEntry) = item {
-                    if let Ok(abc) = dataEntry.metadata() {
-                        if abc.is_dir() {
-                            dir_vec.push(dataEntry.path().to_str().unwrap().clone().to_string());
-                        } else {
-                            let file = dataEntry.path().to_str().unwrap().to_string();
-                            if file.ends_with(&ext) {
-                                list.push(file);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        cur_index = cur_index + 1;
-    }
-    list
 }
 
 #[derive(Serialize)]
@@ -77,26 +44,24 @@ pub fn simple_read_dir(dir: String, ext: String) -> Vec<FileItem> {
         return list;
     }
     for item in entry.unwrap().into_iter() {
-        if let Ok(dataEntry) = item {
-            if let Ok(abc) = dataEntry.metadata() {
-                if abc.is_dir() {
-                    let file_name = dataEntry.file_name().to_str().unwrap().to_string(); 
-                    if !file_name.starts_with(&".") {
-                        list.push(FileItem {
-                            path: dataEntry.file_name().to_str().unwrap().to_string(),
-                            item_type: String::from("dir"),
-                        });
-                    }
-                   
-                } else {
-                    let file = dataEntry.file_name().to_str().unwrap().to_string();
-                    if file.ends_with(&ext) {
-                        list.push(FileItem {
-                            path: file,
-                            item_type: String::from("file"),
-                        });
-                    }
-                }
+        if let Err(_) = item {
+            continue;
+        }
+        let file_name = item.as_ref().unwrap().file_name().into_string().unwrap();
+        let entry = item.unwrap().metadata().unwrap();
+        if entry.is_dir() {
+            if !file_name.starts_with(&".") {
+                list.push(FileItem {
+                    path: file_name,
+                    item_type: String::from("dir"),
+                })
+            }
+        } else {
+            if file_name.ends_with(&ext) {
+                list.push(FileItem {
+                    path: file_name,
+                    item_type: String::from("file"),
+                })
             }
         }
     }
@@ -107,10 +72,10 @@ pub fn simple_read_dir(dir: String, ext: String) -> Vec<FileItem> {
 #[tauri::command]
 pub fn write_media_file(file_name: String, content: Vec<u8>) -> String {
     println!("{}", file_name);
-    let mut file : File = File::create(String::from(file_name)).unwrap();
+    let mut file: File = File::create(String::from(file_name)).unwrap();
     for a in content {
         if file.write(&[a]).is_err() {
-            return String::from("error")
+            return String::from("error");
         }
     }
     String::from("ok")
@@ -132,5 +97,3 @@ pub fn create_file(file_path: String) -> String {
         String::from("ok")
     }
 }
-
-

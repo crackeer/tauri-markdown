@@ -7,10 +7,10 @@ mod command;
 use std::vec;
 
 use command::file::{
-    create_dir, create_file, get_file_content, get_file_list, simple_read_dir, write_file,
+    create_dir, create_file, get_file_content, simple_read_dir, write_file,
     write_media_file,
 };
-use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
+use tauri::{CustomMenuItem, Menu, Submenu};
 use tauri::{Window, WindowMenuEvent};
 
 fn main() {
@@ -24,7 +24,6 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             get_file_content,
-            get_file_list,
             write_file,
             simple_read_dir,
             set_window_title,
@@ -40,7 +39,7 @@ fn main() {
 
 #[tauri::command]
 fn set_window_title(window: Window, title: String) -> String {
-    window.set_title(title.as_str());
+    _ = window.set_title(title.as_str());
     String::from("ok")
 }
 
@@ -53,7 +52,7 @@ fn window_menu_event(event: WindowMenuEvent) {
             event.window().close().unwrap();
         }
         "open_folder" => {
-            event.window().emit("open_folder", "Open Folder");
+            _ = event.window().emit("open_folder", "Open Folder");
         }
         _ => {}
     }

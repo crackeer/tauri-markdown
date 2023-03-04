@@ -2,6 +2,7 @@ import './App.css';
 import 'bytemd/dist/index.css'
 import React, { useState } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
+import 'katex/dist/katex.css'
 import { IconObliqueLine, IconFolder, IconFile, IconEdit, IconSave } from '@arco-design/web-react/icon';
 import { open } from '@tauri-apps/api/dialog';
 import { mkConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
@@ -15,13 +16,18 @@ import IconMarkdown from './asserts/svg/markdown';
 import dayjs from 'dayjs';
 import { listen } from '@tauri-apps/api/event'
 import { Editor, Viewer } from '@bytemd/react'
+import 'bytemd/dist/index.css'
 import highlight from '@bytemd/plugin-highlight';
 import mermaid from '@bytemd/plugin-mermaid';
 import gfm from '@bytemd/plugin-gfm'
+import math from '@bytemd/plugin-math'
+import mediumZoom from '@bytemd/plugin-medium-zoom'
+import gemoji from '@bytemd/plugin-gemoji'
+import frontmatter from '@bytemd/plugin-frontmatter'
 const Row = Grid.Row;
 const Col = Grid.Col;
 const ButtonGroup = Button.Group;
-const plugins = [gfm(), highlight(), mermaid()]
+const plugins = [gfm(), highlight(), mermaid(), mediumZoom(), math(), gemoji(),frontmatter()]
 const QuickDirMaxLevel = 5
 const QuickDir = (props) => {
     if (props.relativeDirs == undefined || props.relativeDirs.length < 1) {
@@ -157,6 +163,7 @@ class App extends React.Component {
     loadDir = async (activeFile, fileType) => {
         if (fileType == "dir") {
             let fileList = await simpleReadDir(activeFile, ".md")
+            console.log(fileList)
             fileList = fmtFileList(fileList, activeFile)
             await this.setState({
                 fileList: fileList,
@@ -224,8 +231,9 @@ class App extends React.Component {
         await deleteActiveFileCache(this.state.activeFile)
     }
     clickFile = async (item) => {
+       
         let currentPath = await join(this.state.activeFile, item.path)
-        await this.loadDir(currentPath, item.item_type)
+        await this.loadDir(item.abs_path, item.item_type)
     }
     quickSelect = async (relativePath) => {
         if (this.state.changed) {
@@ -292,13 +300,13 @@ class App extends React.Component {
     createDir = async (newDir) => {
         let fullPath = await join(this.state.activeFile, newDir)
         let result = await createDir(fullPath)
-        console.log(result)
-        if (result == 'ok') {
-            Message.success("successfully created!!")
-            this.loadDir(this.state.activeFile, "dir")
-        } else {
+        if(result != "ok") {
             Message.error(result)
+            return
         }
+        Message.success("successfully created!!")
+        return this.loadDir(this.state.activeFile, "dir")
+
     }
     createFile = async (newFile) => {
         let fullPath = await join(this.state.activeFile, newFile)
