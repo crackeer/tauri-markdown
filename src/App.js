@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
 import 'katex/dist/katex.css'
 import { IconObliqueLine, IconFolder, IconFile, IconEdit, IconSave } from '@arco-design/web-react/icon';
-import { open } from '@tauri-apps/api/dialog';
+import { open,ask, message } from '@tauri-apps/api/dialog';
 import { mkConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs } from './util/common'
@@ -76,16 +76,19 @@ const FileList = (props) => {
 }
 
 const CreateNew = (props) => {
-    const { newDirName, setNewDirName } = useState("")
-    const { newFileName, setNewFileName } = useState("")
-    return <ButtonGroup>
+    const [newDirName, setNewDirName ] = useState("")
+    const [newFileName, setNewFileName]  = useState("")
+    return <div>
         <Popconfirm
             title={null}
             icon={null}
             content={
-                <Input placeholder="请输入文件夹名" value={newDirName} onChange={setNewDirName} />
+                <Input placeholder="请输入文件夹名" value={newDirName} onChange={(value) => {
+                    console.log(value)
+                    setNewDirName(value)
+                }} />
             }
-            onOk={props.createDir(newDirName)}
+            onOk={() => {props.createDir(newDirName)}}
         >
             <Button><IconFolder /></Button>
         </Popconfirm>
@@ -96,9 +99,9 @@ const CreateNew = (props) => {
             content={
                 <Input placeholder="请输入文件名" value={newFileName} onChange={setNewFileName} />
             }
-            onOk={props.createFile}
+            onOk={() => {props.createDir(newFileName)}}
         ><Button><IconFile /></Button></Popconfirm>
-    </ButtonGroup>
+    </div>
 }
 
 const getMDHeight = () => {
@@ -123,8 +126,6 @@ class App extends React.Component {
             vditorHeight: 0,
             fileType: 'dir',
 
-            newDirName: "",
-            newFileName: '',
             mode: ''
         }
     }
@@ -134,19 +135,8 @@ class App extends React.Component {
         let object = await getLoadConfig()
         this.initSelectFile(object)
         this.listen()
-        window.addEventListener('resize', this.onResizeWindow)
     }
-    onResizeWindow = () => {
-        this.setState({
-            vditorHeight: getMDHeight()
-        })
-        this.resetMDHeight()
-    }
-    resetMDHeight = () => {
-        this.setState({
-            vditorHeight: getMDHeight()
-        })
-    }
+    
     openFile = async () => {
         const homeDirPath = await homeDir();
         let selected = await open({
@@ -305,8 +295,7 @@ class App extends React.Component {
             return
         }
         Message.success("successfully created!!")
-        return this.loadDir(this.state.activeFile, "dir")
-
+        this.loadDir(this.state.activeFile, "dir")
     }
     createFile = async (newFile) => {
         let fullPath = await join(this.state.activeFile, newFile)
