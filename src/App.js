@@ -1,5 +1,6 @@
 import './App.css';
 import 'bytemd/dist/index.css'
+import 'github-markdown-css/github-markdown-light.css'
 import React, { useState } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
 import 'katex/dist/katex.css'
@@ -16,7 +17,6 @@ import IconMarkdown from './asserts/svg/markdown';
 import dayjs from 'dayjs';
 import { listen } from '@tauri-apps/api/event'
 import { Editor, Viewer } from '@bytemd/react'
-import 'bytemd/dist/index.css'
 import highlight from '@bytemd/plugin-highlight';
 import mermaid from '@bytemd/plugin-mermaid';
 import gfm from '@bytemd/plugin-gfm'
