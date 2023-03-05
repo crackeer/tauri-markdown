@@ -99,7 +99,7 @@ const CreateNew = (props) => {
             content={
                 <Input placeholder="请输入文件名" value={newFileName} onChange={setNewFileName} />
             }
-            onOk={() => {props.createDir(newFileName)}}
+            onOk={() => {props.createFile(newFileName)}}
         ><Button><IconFile /></Button></Popconfirm>
     </div>
 }
