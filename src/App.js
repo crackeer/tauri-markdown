@@ -212,6 +212,7 @@ class App extends React.Component {
         if (!this.state.changed) {
             return
         }
+        console.log(this.state.activeFile, this.state.value)
         let result = await writeFile(this.state.activeFile, this.state.value)
         await this.setState({
             changed: false,
@@ -221,7 +222,6 @@ class App extends React.Component {
         await deleteActiveFileCache(this.state.activeFile)
     }
     clickFile = async (item) => {
-       
         let currentPath = await join(this.state.activeFile, item.path)
         await this.loadDir(item.abs_path, item.item_type)
     }
@@ -253,7 +253,8 @@ class App extends React.Component {
     }
     onInput = async (str) => {
         await this.setState({
-            changed: true
+            changed: true,
+            value: str
         })
         setWindowTitle(this.state.activeFile + '(changed)')
         await setActiveFileCache(this.state.activeFile, str)
@@ -338,9 +339,7 @@ class App extends React.Component {
                         value={this.state.value}
                         plugins={plugins}
                         onChange={(v) => {
-                            this.setState({
-                                value: v
-                            })
+                            this.onInput(v)
                         }} /> : null
                 }
 
