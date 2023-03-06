@@ -1,9 +1,11 @@
 import './App.css';
 import 'bytemd/dist/index.css'
+import 'github-markdown-css/github-markdown-light.css'
 import React, { useState } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
+import 'katex/dist/katex.css'
 import { IconObliqueLine, IconFolder, IconFile, IconEdit, IconSave } from '@arco-design/web-react/icon';
-import { open } from '@tauri-apps/api/dialog';
+import { open,ask, message } from '@tauri-apps/api/dialog';
 import { mkConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs } from './util/common'
@@ -18,10 +20,14 @@ import { Editor, Viewer } from '@bytemd/react'
 import highlight from '@bytemd/plugin-highlight';
 import mermaid from '@bytemd/plugin-mermaid';
 import gfm from '@bytemd/plugin-gfm'
+import math from '@bytemd/plugin-math'
+import mediumZoom from '@bytemd/plugin-medium-zoom'
+import gemoji from '@bytemd/plugin-gemoji'
+import frontmatter from '@bytemd/plugin-frontmatter'
 const Row = Grid.Row;
 const Col = Grid.Col;
 const ButtonGroup = Button.Group;
-const plugins = [gfm(), highlight(), mermaid()]
+const plugins = [gfm(), highlight(), mermaid(), mediumZoom(), math(), gemoji(),frontmatter()]
 const QuickDirMaxLevel = 5
 const QuickDir = (props) => {
     if (props.relativeDirs == undefined || props.relativeDirs.length < 1) {
@@ -34,15 +40,15 @@ const QuickDir = (props) => {
                     {
                         props.relativeDirs.map(item => {
                             if (item.static != undefined && item.static) {
-                                return <>
+                                return <span key={item.path}>
                                     <strong style={{ fontSize: '20px', marginRight: '5px' }}>{item.name}</strong>
                                     {
                                         props.mode == 'view' ? <IconEdit onClick={props.setEditMode} /> : <IconSave onClick={props.saveContent} />
                                     }
 
-                                </>
+                                </span>
                             }
-                            return <Link onClick={() => props.quickSelect(item.path)} style={{ fontSize: '20px' }}>{item.name}</Link>
+                            return <Link onClick={() => props.quickSelect(item.path)} style={{ fontSize: '20px' }} key={item.path}>{item.name}</Link>
                         })
                     }
 
@@ -70,16 +76,19 @@ const FileList = (props) => {
 }
 
 const CreateNew = (props) => {
-    const { newDirName, setNewDirName } = useState("")
-    const { newFileName, setNewFileName } = useState("")
-    return <ButtonGroup>
+    const [newDirName, setNewDirName ] = useState("")
+    const [newFileName, setNewFileName]  = useState("")
+    return <div>
         <Popconfirm
             title={null}
             icon={null}
             content={
-                <Input placeholder="请输入文件夹名" value={newDirName} onChange={setNewDirName} />
+                <Input placeholder="请输入文件夹名" value={newDirName} onChange={(value) => {
+                    console.log(value)
+                    setNewDirName(value)
+                }} />
             }
-            onOk={props.createDir(newDirName)}
+            onOk={() => {props.createDir(newDirName)}}
         >
             <Button><IconFolder /></Button>
         </Popconfirm>
@@ -90,9 +99,9 @@ const CreateNew = (props) => {
             content={
                 <Input placeholder="请输入文件名" value={newFileName} onChange={setNewFileName} />
             }
-            onOk={props.createFile}
+            onOk={() => {props.createFile(newFileName)}}
         ><Button><IconFile /></Button></Popconfirm>
-    </ButtonGroup>
+    </div>
 }
 
 const getMDHeight = () => {
@@ -116,8 +125,6 @@ class App extends React.Component {
             vditorHeight: 0,
             fileType: 'dir',
 
-            newDirName: "",
-            newFileName: '',
             mode: ''
         }
     }
@@ -125,20 +132,9 @@ class App extends React.Component {
         await mkConfigDir()
         let object = await getLoadConfig()
         this.initSelectFile(object)
-       
-        window.addEventListener('resize', this.onResizeWindow)
+        this.listen()
     }
-    onResizeWindow = () => {
-        this.setState({
-            vditorHeight: getMDHeight()
-        })
-        this.resetMDHeight()
-    }
-    resetMDHeight = () => {
-        this.setState({
-            vditorHeight: getMDHeight()
-        })
-    }
+    
     openFile = async () => {
         const homeDirPath = await homeDir();
         let selected = await open({
@@ -155,6 +151,7 @@ class App extends React.Component {
     loadDir = async (activeFile, fileType) => {
         if (fileType == "dir") {
             let fileList = await simpleReadDir(activeFile, ".md")
+            console.log(fileList)
             fileList = fmtFileList(fileList, activeFile)
             await this.setState({
                 fileList: fileList,
@@ -173,10 +170,10 @@ class App extends React.Component {
                     fileType: fileType,
                     fileList: [],
                     relativeDirs: list,
+                    value: data,
                     mode: 'view'
                 })
 
-                this.renderMD(data)
             } catch (e) {
                 console.log(e)
             }
@@ -184,14 +181,10 @@ class App extends React.Component {
         setLoadConfig({
             rootDir: this.state.rootDir,
             activeFile: activeFile,
-            fileType: fileType
+            fileType: fileType,
+            mode: this.state.mode,
         })
         setWindowTitle(activeFile)
-    }
-    renderMD = async (data) => {
-        await this.setState({
-            value: data
-        })
     }
     convertImage = () => {
         setTimeout(() => {
@@ -210,13 +203,14 @@ class App extends React.Component {
     saveFile2View = async () => {
         await this.saveFile()
         this.setState({
-            mode : 'view'
+            mode: 'view'
         })
     }
     saveFile = async () => {
-        if(!this.state.changed) {
+        if (!this.state.changed) {
             return
         }
+        console.log(this.state.activeFile, this.state.value)
         let result = await writeFile(this.state.activeFile, this.state.value)
         await this.setState({
             changed: false,
@@ -227,7 +221,7 @@ class App extends React.Component {
     }
     clickFile = async (item) => {
         let currentPath = await join(this.state.activeFile, item.path)
-        await this.loadDir(currentPath, item.item_type)
+        await this.loadDir(item.abs_path, item.item_type)
     }
     quickSelect = async (relativePath) => {
         if (this.state.changed) {
@@ -257,9 +251,10 @@ class App extends React.Component {
     }
     onInput = async (str) => {
         await this.setState({
-            changed: true
+            changed: true,
+            value: str
         })
-        setWindowTitle(this.state.activeFile + '(有修改)')
+        setWindowTitle(this.state.activeFile + '(changed)')
         await setActiveFileCache(this.state.activeFile, str)
     }
     uploadImage = async (files) => {
@@ -276,8 +271,7 @@ class App extends React.Component {
         this.convertImage()
     }
     initSelectFile = async (object) => {
-        console.log(object)
-        if(object == undefined || object.rootDir.length < 1) {
+        if (object == undefined || object.rootDir == undefined || object.rootDir.length < 1) {
             this.openFile()
             return
         }
@@ -287,7 +281,7 @@ class App extends React.Component {
                 activeFile = object.rootDir
             }
             await this.setState({
-                rootDir : object.rootDir,
+                rootDir: object.rootDir,
             })
             await this.loadDir(activeFile, object.fileType)
         }
@@ -295,13 +289,12 @@ class App extends React.Component {
     createDir = async (newDir) => {
         let fullPath = await join(this.state.activeFile, newDir)
         let result = await createDir(fullPath)
-        console.log(result)
-        if (result == 'ok') {
-            Message.success("successfully created!!")
-            this.loadDir(this.state.activeFile, "dir")
-        } else {
+        if(result != "ok") {
             Message.error(result)
+            return
         }
+        Message.success("successfully created!!")
+        this.loadDir(this.state.activeFile, "dir")
     }
     createFile = async (newFile) => {
         let fullPath = await join(this.state.activeFile, newFile)
@@ -312,6 +305,11 @@ class App extends React.Component {
         } else {
             Message.error(result)
         }
+    }
+    listen = async () => {
+        const unlisten = await listen('open_folder', (event) => {
+            this.openFile()
+        })
     }
 
     render() {

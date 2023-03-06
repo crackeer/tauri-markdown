@@ -1101,6 +1101,23 @@
   "resolved" "https://registry.npmjs.org/@braintree/sanitize-url/-/sanitize-url-6.0.0.tgz"
   "version" "6.0.0"
 
+"@bytemd/plugin-frontmatter@^1.20.2":
+  "integrity" "sha512-YuVzY7nU70RBrHJo+STvryi/4XGQAqRx2lpHDUdxVDhpd5IiTkNB7bnLiKnn1HpOMvplLOLsCZOIiV+8cFQJ+g=="
+  "resolved" "https://registry.npmmirror.com/@bytemd/plugin-frontmatter/-/plugin-frontmatter-1.20.2.tgz"
+  "version" "1.20.2"
+  dependencies:
+    "@types/js-yaml" "^4.0.5"
+    "js-yaml" "^4.1.0"
+    "remark-frontmatter" "^4.0.1"
+    "vfile" "^5.3.6"
+
+"@bytemd/plugin-gemoji@^1.20.2":
+  "integrity" "sha512-j8ABqKs3Ugd4o3kxK0Qn2kfgNuG7wXpFZyB9f7tE3pxNoltgYZxYFBut9M5McuvCgsYHVobE67lQ3GxneB6zuw=="
+  "resolved" "https://registry.npmmirror.com/@bytemd/plugin-gemoji/-/plugin-gemoji-1.20.2.tgz"
+  "version" "1.20.2"
+  dependencies:
+    "remark-gemoji" "^7.0.1"
+
 "@bytemd/plugin-gfm@^1.17.2":
   "integrity" "sha512-u3DBMdPTcRMIRvzc582ylZhvrFumnoGjWNnUO3aXQH0mJ98XyGXxdWYAh7jow+XevhApp966ks5bvDAbYjzRTQ=="
   "resolved" "https://registry.npmjs.org/@bytemd/plugin-gfm/-/plugin-gfm-1.17.2.tgz"
@@ -1115,6 +1132,22 @@
   "version" "1.17.2"
   dependencies:
     "highlight.js" "^11.6.0"
+
+"@bytemd/plugin-math@^1.20.2":
+  "integrity" "sha512-Ric1oWWz9ggx9UQ3OgpPIruz1UEnqLNsTiDclsoo8YVrGVQE1Mul1tTujy8MNIh15EEe6b9rV2OJ7dxuq6OJdg=="
+  "resolved" "https://registry.npmmirror.com/@bytemd/plugin-math/-/plugin-math-1.20.2.tgz"
+  "version" "1.20.2"
+  dependencies:
+    "@types/katex" "^0.16.0"
+    "katex" "^0.16.4"
+    "remark-math" "^5.1.1"
+
+"@bytemd/plugin-medium-zoom@^1.20.2":
+  "integrity" "sha512-z2W7qRlR5D0afB49gfxJjkiVeHyiIesGotT6+jDHvx23sjmTUvExaOcHx8o9AzRc4zDWIE/LbHwIhDvT8Q+BoQ=="
+  "resolved" "https://registry.npmmirror.com/@bytemd/plugin-medium-zoom/-/plugin-medium-zoom-1.20.2.tgz"
+  "version" "1.20.2"
+  dependencies:
+    "medium-zoom" "^1.0.8"
 
 "@bytemd/plugin-mermaid@^1.17.2":
   "integrity" "sha512-/s3jY49ugPep4rwzZzKm6+rKAsJ7W3uTu/ht6X/pWCh1Me35MQIqEbgGaAxz/WOp+LCB/fJRzyA8ADsfsAP66A=="
@@ -2024,6 +2057,11 @@
     "jest-matcher-utils" "^28.0.0"
     "pretty-format" "^28.0.0"
 
+"@types/js-yaml@^4.0.5":
+  "integrity" "sha512-FhpRzf927MNQdRZP0J5DLIdTXhjLYzeUTmLAu69mnVksLH9CJY3IuSeEgbKUki7GQZm0WqDkGzyxju2EZGD2wA=="
+  "resolved" "https://registry.npmmirror.com/@types/js-yaml/-/js-yaml-4.0.5.tgz"
+  "version" "4.0.5"
+
 "@types/json-schema@*", "@types/json-schema@^7.0.4", "@types/json-schema@^7.0.5", "@types/json-schema@^7.0.8", "@types/json-schema@^7.0.9":
   "integrity" "sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ=="
   "resolved" "https://registry.npmjs.org/@types/json-schema/-/json-schema-7.0.11.tgz"
@@ -2033,6 +2071,16 @@
   "integrity" "sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ=="
   "resolved" "https://registry.npmjs.org/@types/json5/-/json5-0.0.29.tgz"
   "version" "0.0.29"
+
+"@types/katex@^0.11.0":
+  "integrity" "sha512-DUlIj2nk0YnJdlWgsFuVKcX27MLW0KbKmGVoUHmFr+74FYYNUDAaj9ZqTADvsbE8rfxuVmSFc7KczYn5Y09ozg=="
+  "resolved" "https://registry.npmmirror.com/@types/katex/-/katex-0.11.1.tgz"
+  "version" "0.11.1"
+
+"@types/katex@^0.16.0":
+  "integrity" "sha512-hz+S3nV6Mym5xPbT9fnO8dDhBFQguMYpY0Ipxv06JMi1ORgnEM4M1ymWDUhUNer3ElLmT583opRo4RzxKmh9jw=="
+  "resolved" "https://registry.npmmirror.com/@types/katex/-/katex-0.16.0.tgz"
+  "version" "0.16.0"
 
 "@types/lodash-es@^4.17.6":
   "integrity" "sha512-R+zTeVUKDdfoRxpAryaQNRKk3105Rrgx2CFRClIgRGaqDTdjsm8h6IYA8ir584W3ePzkZfst5xIgDwYrlh9HLg=="
@@ -3382,6 +3430,11 @@
   "integrity" "sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw=="
   "resolved" "https://registry.npmjs.org/commander/-/commander-7.2.0.tgz"
   "version" "7.2.0"
+
+"commander@^8.0.0":
+  "integrity" "sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww=="
+  "resolved" "https://registry.npmmirror.com/commander/-/commander-8.3.0.tgz"
+  "version" "8.3.0"
 
 "commander@^8.3.0":
   "integrity" "sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww=="
@@ -5186,6 +5239,13 @@
   dependencies:
     "reusify" "^1.0.4"
 
+"fault@^2.0.0":
+  "integrity" "sha512-WtySTkS4OKev5JtpHXnib4Gxiurzh5NCGvWrFaZ34m6JehfTUhKZvn9njTfw48t6JumVQOmrKqpmGcdwxnhqBQ=="
+  "resolved" "https://registry.npmmirror.com/fault/-/fault-2.0.1.tgz"
+  "version" "2.0.1"
+  dependencies:
+    "format" "^0.2.0"
+
 "faye-websocket@^0.11.3":
   "integrity" "sha512-CzbClwlXAuiRQAlUyfqPgvPoNKTckTPGfwZV4ZdAhVcP2lh9KUxJg2b5GkE7XbjKQ3YJnQ9z6D9ntLAlB+tP8g=="
   "resolved" "https://registry.npmjs.org/faye-websocket/-/faye-websocket-0.11.4.tgz"
@@ -5347,6 +5407,11 @@
     "combined-stream" "^1.0.8"
     "mime-types" "^2.1.12"
 
+"format@^0.2.0":
+  "integrity" "sha512-wzsgA6WOq+09wrU1tsJ09udeR/YZRaeArL9e1wPbFg3GG2yDnC2ldKpxs4xunpFF9DgqCqOIra3bc1HWrJ37Ww=="
+  "resolved" "https://registry.npmmirror.com/format/-/format-0.2.2.tgz"
+  "version" "0.2.2"
+
 "forwarded@0.2.0":
   "integrity" "sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow=="
   "resolved" "https://registry.npmjs.org/forwarded/-/forwarded-0.2.0.tgz"
@@ -5431,6 +5496,11 @@
   "resolved" "https://registry.npmjs.org/functions-have-names/-/functions-have-names-1.2.3.tgz"
   "version" "1.2.3"
 
+"gemoji@^7.0.0":
+  "integrity" "sha512-wI0YWDIfQraQMDs0yXAVQiVBZeMm/rIYssf8LZlMDdssKF19YqJKOHkv4zvwtVQTBJ0LNmErv1S+DqlVUudz8g=="
+  "resolved" "https://registry.npmmirror.com/gemoji/-/gemoji-7.1.0.tgz"
+  "version" "7.1.0"
+
 "gensync@^1.0.0-beta.2":
   "integrity" "sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg=="
   "resolved" "https://registry.npmjs.org/gensync/-/gensync-1.0.0-beta.2.tgz"
@@ -5472,6 +5542,11 @@
   dependencies:
     "call-bind" "^1.0.2"
     "get-intrinsic" "^1.1.1"
+
+"github-markdown-css@^5.2.0":
+  "integrity" "sha512-hq5RaCInSUZ48bImOZpkppW2/MT44StRgsbsZ8YA4vJFwLKB/Vo3k7R2t+pUGqO+ThG0QDMi96TewV/B3vyItg=="
+  "resolved" "https://registry.npmmirror.com/github-markdown-css/-/github-markdown-css-5.2.0.tgz"
+  "version" "5.2.0"
 
 "glob-parent@^5.1.2":
   "integrity" "sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow=="
@@ -6890,6 +6965,20 @@
     "array-includes" "^3.1.5"
     "object.assign" "^4.1.2"
 
+"katex@^0.13.0":
+  "integrity" "sha512-jZxYuKCma3VS5UuxOx/rFV1QyGSl3Uy/i0kTJF3HgQ5xMinCQVF8Zd4bMY/9aI9b9A2pjIBOsjSSm68ykTAr8w=="
+  "resolved" "https://registry.npmmirror.com/katex/-/katex-0.13.24.tgz"
+  "version" "0.13.24"
+  dependencies:
+    "commander" "^8.0.0"
+
+"katex@^0.16.4":
+  "integrity" "sha512-WudRKUj8yyBeVDI4aYMNxhx5Vhh2PjpzQw1GRu/LVGqL4m1AxwD1GcUp0IMbdJaf5zsjtj8ghP0DOQRYhroNkw=="
+  "resolved" "https://registry.npmmirror.com/katex/-/katex-0.16.4.tgz"
+  "version" "0.16.4"
+  dependencies:
+    "commander" "^8.0.0"
+
 "khroma@^2.0.0":
   "integrity" "sha512-2J8rDNlQWbtiNYThZRvmMv5yt44ZakX+Tz5ZIp/mN1pt4snn+m030Va5Z4v8xA0cQFDXBwO/8i42xL4QPsVk3g=="
   "resolved" "https://registry.npmjs.org/khroma/-/khroma-2.0.0.tgz"
@@ -7135,6 +7224,15 @@
     "unist-util-stringify-position" "^3.0.0"
     "uvu" "^0.5.0"
 
+"mdast-util-frontmatter@^1.0.0":
+  "integrity" "sha512-JjA2OjxRqAa8wEG8hloD0uTU0kdn8kbtOWpPP94NBkfAlbxn4S8gCGf/9DwFtEeGPXrDcNXdiDjVaRdUFqYokw=="
+  "resolved" "https://registry.npmmirror.com/mdast-util-frontmatter/-/mdast-util-frontmatter-1.0.1.tgz"
+  "version" "1.0.1"
+  dependencies:
+    "@types/mdast" "^3.0.0"
+    "mdast-util-to-markdown" "^1.3.0"
+    "micromark-extension-frontmatter" "^1.0.0"
+
 "mdast-util-gfm-autolink-literal@^1.0.0":
   "integrity" "sha512-FzopkOd4xTTBeGXhXSBU0OCDDh5lUj2rd+HQqG92Ld+jL4lpUfgX2AT2OHAVP9aEeDKp7G92fuooSZcYJA3cRg=="
   "resolved" "https://registry.npmjs.org/mdast-util-gfm-autolink-literal/-/mdast-util-gfm-autolink-literal-1.0.2.tgz"
@@ -7192,6 +7290,15 @@
     "mdast-util-gfm-task-list-item" "^1.0.0"
     "mdast-util-to-markdown" "^1.0.0"
 
+"mdast-util-math@^2.0.0":
+  "integrity" "sha512-8gmkKVp9v6+Tgjtq6SYx9kGPpTf6FVYRa53/DLh479aldR9AyP48qeVOgNZ5X7QUK7nOy4yw7vg6mbiGcs9jWQ=="
+  "resolved" "https://registry.npmmirror.com/mdast-util-math/-/mdast-util-math-2.0.2.tgz"
+  "version" "2.0.2"
+  dependencies:
+    "@types/mdast" "^3.0.0"
+    "longest-streak" "^3.0.0"
+    "mdast-util-to-markdown" "^1.3.0"
+
 "mdast-util-to-hast@^12.1.0":
   "integrity" "sha512-dyindR2P7qOqXO1hQirZeGtVbiX7xlNQbw7gGaAwN4A1dh4+X8xU/JyYmRoyB8Fu1uPXzp7mlL5QwW7k+knvgA=="
   "resolved" "https://registry.npmjs.org/mdast-util-to-hast/-/mdast-util-to-hast-12.2.1.tgz"
@@ -7246,6 +7353,11 @@
   "integrity" "sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ=="
   "resolved" "https://registry.npmjs.org/media-typer/-/media-typer-0.3.0.tgz"
   "version" "0.3.0"
+
+"medium-zoom@^1.0.8":
+  "integrity" "sha512-CjFVuFq/IfrdqesAXfg+hzlDKu6A2n80ZIq0Kl9kWjoHh9j1N9Uvk5X0/MmN0hOfm5F9YBswlClhcwnmtwz7gA=="
+  "resolved" "https://registry.npmmirror.com/medium-zoom/-/medium-zoom-1.0.8.tgz"
+  "version" "1.0.8"
 
 "memfs@^3.1.2", "memfs@^3.4.3":
   "integrity" "sha512-ygaiUSNalBX85388uskeCyhSAoOSgzBbtVCr9jA2RROssFL9Q19/ZXFqS+2Th2sr1ewNIWgFdLzLC3Yl1Zv+lw=="
@@ -7310,6 +7422,16 @@
     "micromark-util-symbol" "^1.0.0"
     "micromark-util-types" "^1.0.1"
     "uvu" "^0.5.0"
+
+"micromark-extension-frontmatter@^1.0.0":
+  "integrity" "sha512-9OJhCXkrpj8qIXW5AAgRZGvS8Q4GTMdH5+Ljt98kV4XQVflRGeEhNRYp6O/zCvf8c8lZ+wc4uwmbly27pS/s4Q=="
+  "resolved" "https://registry.npmmirror.com/micromark-extension-frontmatter/-/micromark-extension-frontmatter-1.0.1.tgz"
+  "version" "1.0.1"
+  dependencies:
+    "fault" "^2.0.0"
+    "micromark-util-character" "^1.0.0"
+    "micromark-util-symbol" "^1.0.0"
+    "micromark-util-types" "^1.0.0"
 
 "micromark-extension-gfm-autolink-literal@^1.0.0":
   "integrity" "sha512-i3dmvU0htawfWED8aHMMAzAVp/F0Z+0bPh3YrbTPPL1v4YAlCZpy5rBO5p0LPYiZo0zFVkoYh7vDU7yQSiCMjg=="
@@ -7390,6 +7512,19 @@
     "micromark-extension-gfm-task-list-item" "^1.0.0"
     "micromark-util-combine-extensions" "^1.0.0"
     "micromark-util-types" "^1.0.0"
+
+"micromark-extension-math@^2.0.0":
+  "integrity" "sha512-cFv2B/E4pFPBBFuGgLHkkNiFAIQv08iDgPH2HCuR2z3AUgMLecES5Cq7AVtwOtZeRrbA80QgMUk8VVW0Z+D2FA=="
+  "resolved" "https://registry.npmmirror.com/micromark-extension-math/-/micromark-extension-math-2.0.2.tgz"
+  "version" "2.0.2"
+  dependencies:
+    "@types/katex" "^0.11.0"
+    "katex" "^0.13.0"
+    "micromark-factory-space" "^1.0.0"
+    "micromark-util-character" "^1.0.0"
+    "micromark-util-symbol" "^1.0.0"
+    "micromark-util-types" "^1.0.0"
+    "uvu" "^0.5.0"
 
 "micromark-factory-destination@^1.0.0":
   "integrity" "sha512-eUBA7Rs1/xtTVun9TmV3gjfPz2wEwgK5R5xcbIM5ZYAtvGF6JkyaDsj0agx8urXnO31tEO6Ug83iVH3tdedLnw=="
@@ -9112,6 +9247,26 @@
   "resolved" "https://registry.npmjs.org/relateurl/-/relateurl-0.2.7.tgz"
   "version" "0.2.7"
 
+"remark-frontmatter@^4.0.1":
+  "integrity" "sha512-38fJrB0KnmD3E33a5jZC/5+gGAC2WKNiPw1/fdXJvijBlhA7RCsvJklrYJakS0HedninvaCYW8lQGf9C918GfA=="
+  "resolved" "https://registry.npmmirror.com/remark-frontmatter/-/remark-frontmatter-4.0.1.tgz"
+  "version" "4.0.1"
+  dependencies:
+    "@types/mdast" "^3.0.0"
+    "mdast-util-frontmatter" "^1.0.0"
+    "micromark-extension-frontmatter" "^1.0.0"
+    "unified" "^10.0.0"
+
+"remark-gemoji@^7.0.1":
+  "integrity" "sha512-vhjuntkvYxRgM4Um6L5N7B3SrNu3eX6jNqpqAywpAvSYPbmDPNL3I5E6zWm+KPCyh3OpKRc5OPnz7SifggzePw=="
+  "resolved" "https://registry.npmmirror.com/remark-gemoji/-/remark-gemoji-7.0.1.tgz"
+  "version" "7.0.1"
+  dependencies:
+    "@types/mdast" "^3.0.0"
+    "gemoji" "^7.0.0"
+    "unified" "^10.0.0"
+    "unist-util-visit" "^4.0.0"
+
 "remark-gfm@^3.0.1":
   "integrity" "sha512-lEFDoi2PICJyNrACFOfDD3JlLkuSbOa5Wd8EPt06HUdptv8Gn0bxYTdbU/XXQ3swAPkEaGxxPN9cbnMHvVu1Ig=="
   "resolved" "https://registry.npmjs.org/remark-gfm/-/remark-gfm-3.0.1.tgz"
@@ -9120,6 +9275,16 @@
     "@types/mdast" "^3.0.0"
     "mdast-util-gfm" "^2.0.0"
     "micromark-extension-gfm" "^2.0.0"
+    "unified" "^10.0.0"
+
+"remark-math@^5.1.1":
+  "integrity" "sha512-cE5T2R/xLVtfFI4cCePtiRn+e6jKMtFDR3P8V3qpv8wpKjwvHoBA4eJzvX+nVrnlNy0911bdGmuspCSwetfYHw=="
+  "resolved" "https://registry.npmmirror.com/remark-math/-/remark-math-5.1.1.tgz"
+  "version" "5.1.1"
+  dependencies:
+    "@types/mdast" "^3.0.0"
+    "mdast-util-math" "^2.0.0"
+    "micromark-extension-math" "^2.0.0"
     "unified" "^10.0.0"
 
 "remark-parse@^10.0.1":
@@ -10423,10 +10588,10 @@
     "@types/unist" "^2.0.0"
     "unist-util-stringify-position" "^3.0.0"
 
-"vfile@^5.0.0", "vfile@^5.3.4":
-  "integrity" "sha512-KI+7cnst03KbEyN1+JE504zF5bJBZa+J+CrevLeyIMq0aPU681I2rQ5p4PlnQ6exFtWiUrg26QUdFMnAKR6PIw=="
-  "resolved" "https://registry.npmjs.org/vfile/-/vfile-5.3.4.tgz"
-  "version" "5.3.4"
+"vfile@^5.0.0", "vfile@^5.3.4", "vfile@^5.3.6":
+  "integrity" "sha512-r7qlzkgErKjobAmyNIkkSpizsFPYiUPuJb5pNW1RB4JcYVZhs4lIbVqk8XPk033CV/1z8ss5pkax8SuhGpcG8g=="
+  "resolved" "https://registry.npmmirror.com/vfile/-/vfile-5.3.7.tgz"
+  "version" "5.3.7"
   dependencies:
     "@types/unist" "^2.0.0"
     "is-buffer" "^2.0.0"

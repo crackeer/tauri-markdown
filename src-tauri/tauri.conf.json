@@ -19,10 +19,15 @@
                     "*"
                 ]
             },
+            "http": {
+                "all": true
+            },
             "protocol": {
                 "asset": true,
                 "assetScope": {
-                    "allow": ["*"]
+                    "allow": [
+                        "*"
+                    ]
                 }
             }
         },
@@ -70,7 +75,7 @@
                 "fullscreen": false,
                 "height": 600,
                 "resizable": true,
-                "title": "Tauri App",
+                "title": "TauriMarkdown",
                 "width": 800
             }
         ]
