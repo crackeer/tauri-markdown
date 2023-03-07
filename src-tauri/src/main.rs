@@ -10,15 +10,16 @@ use command::file::{
     create_dir, create_file, get_file_content, simple_read_dir, write_file,
     write_media_file,
 };
-use tauri::{CustomMenuItem, Menu, Submenu};
+use tauri::{CustomMenuItem, Menu, Submenu, MenuItem};
 use tauri::{Window, WindowMenuEvent};
 
 fn main() {
     // 这里 `"quit".to_string()` 定义菜单项 ID，第二个参数是菜单项标签。
     let close = CustomMenuItem::new("open_folder".to_string(), "Open Folder");
     let submenu = Submenu::new("File", Menu::new().add_item(close));
+    let native_menu = Submenu::new("System", Menu::new().add_native_item(MenuItem::Copy).add_native_item(MenuItem::Paste));
     let menu = Menu::new()
-        .add_submenu(submenu);
+        .add_submenu(native_menu).add_submenu(submenu);
     //let menu = Menu::os_default(&"sss");
     let ctx = tauri::generate_context!();
     tauri::Builder::default()

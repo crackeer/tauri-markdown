@@ -3,7 +3,9 @@ import 'bytemd/dist/index.css'
 import 'github-markdown-css/github-markdown-light.css'
 import React, { useState } from 'react';
 import "@arco-design/web-react/dist/css/arco.css";
+import 'highlight.js/styles/default.css'
 import 'katex/dist/katex.css'
+import { readText } from '@tauri-apps/api/clipboard';
 import { IconObliqueLine, IconFolder, IconFile, IconEdit, IconSave } from '@arco-design/web-react/icon';
 import { open,ask, message } from '@tauri-apps/api/dialog';
 import { mkConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
@@ -27,7 +29,6 @@ import frontmatter from '@bytemd/plugin-frontmatter'
 const Row = Grid.Row;
 const Col = Grid.Col;
 const ButtonGroup = Button.Group;
-const plugins = [gfm(), highlight(), mermaid(), mediumZoom(), math(), gemoji(),frontmatter()]
 const QuickDirMaxLevel = 5
 const QuickDir = (props) => {
     if (props.relativeDirs == undefined || props.relativeDirs.length < 1) {
@@ -104,12 +105,10 @@ const CreateNew = (props) => {
     </div>
 }
 
-const getMDHeight = () => {
-    return window.innerHeight - 10
-}
 
 class App extends React.Component {
-    vditor = null
+    editor = null
+    plugins = []
     constructor(props) {
         super(props);
         this.state = {
@@ -133,6 +132,8 @@ class App extends React.Component {
         let object = await getLoadConfig()
         this.initSelectFile(object)
         this.listen()
+        this.plugins = [gfm(), highlight(), mermaid(), mediumZoom(), math(), gemoji(),frontmatter()]
+
     }
     
     openFile = async () => {
@@ -198,6 +199,10 @@ class App extends React.Component {
         if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
             this.saveFile();
+        } else if (event.key === "v" && (event.ctrlKey || event.metaKey)) {
+            console.log(this.editor)
+            const clipboardText = await readText();
+            console.log("readText", clipboardText)
         }
     }
     saveFile2View = async () => {
@@ -335,15 +340,18 @@ class App extends React.Component {
                 {
                     this.state.fileType == 'file' && this.state.mode == 'edit' ? <Editor
                         value={this.state.value}
-                        plugins={plugins}
+                        plugins={this.plugins}
                         mode="auto"
+                        ref={(e) => {
+                            this.editor = e
+                        }}
                         onChange={(v) => {
                             this.onInput(v)
                         }} /> : null
                 }
 
                 {
-                    this.state.fileType == 'file' && this.state.mode == 'view' ? <Viewer value={this.state.value} plugins={plugins} /> : null
+                    this.state.fileType == 'file' && this.state.mode == 'view' ? <Viewer value={this.state.value} plugins={this.plugins} /> : null
                 }
 
             </div>
