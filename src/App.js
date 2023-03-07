@@ -7,7 +7,7 @@ import 'highlight.js/styles/default.css'
 import 'katex/dist/katex.css'
 import { readText } from '@tauri-apps/api/clipboard';
 import { IconObliqueLine, IconFolder, IconFile, IconEdit, IconSave } from '@arco-design/web-react/icon';
-import { open,ask, message } from '@tauri-apps/api/dialog';
+import { open, ask, message } from '@tauri-apps/api/dialog';
 import { mkConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs } from './util/common'
@@ -77,8 +77,8 @@ const FileList = (props) => {
 }
 
 const CreateNew = (props) => {
-    const [newDirName, setNewDirName ] = useState("")
-    const [newFileName, setNewFileName]  = useState("")
+    const [newDirName, setNewDirName] = useState("")
+    const [newFileName, setNewFileName] = useState("")
     return <div>
         <Popconfirm
             title={null}
@@ -89,7 +89,7 @@ const CreateNew = (props) => {
                     setNewDirName(value)
                 }} />
             }
-            onOk={() => {props.createDir(newDirName)}}
+            onOk={() => { props.createDir(newDirName) }}
         >
             <Button><IconFolder /></Button>
         </Popconfirm>
@@ -100,7 +100,7 @@ const CreateNew = (props) => {
             content={
                 <Input placeholder="请输入文件名" value={newFileName} onChange={setNewFileName} />
             }
-            onOk={() => {props.createFile(newFileName)}}
+            onOk={() => { props.createFile(newFileName) }}
         ><Button><IconFile /></Button></Popconfirm>
     </div>
 }
@@ -108,7 +108,7 @@ const CreateNew = (props) => {
 
 class App extends React.Component {
     editor = null
-    plugins = []
+    plugins = [gfm(), highlight(), mermaid(), mediumZoom(), math(), gemoji(), frontmatter()]
     constructor(props) {
         super(props);
         this.state = {
@@ -132,10 +132,7 @@ class App extends React.Component {
         let object = await getLoadConfig()
         this.initSelectFile(object)
         this.listen()
-        this.plugins = [gfm(), highlight(), mermaid(), mediumZoom(), math(), gemoji(),frontmatter()]
-
     }
-    
     openFile = async () => {
         const homeDirPath = await homeDir();
         let selected = await open({
@@ -143,6 +140,9 @@ class App extends React.Component {
             multiple: false,
             defaultPath: homeDirPath,
         });
+        if (selected.length < 1) {
+            return
+        }
         await this.setState({
             rootDir: selected,
             relativeDirs: [],
@@ -250,6 +250,9 @@ class App extends React.Component {
                 await this.quickSelect(relativePath)
             },
             onCancel: async () => {
+                await this.setState({
+                    changed : false
+                })
                 await this.quickSelect(relativePath)
             }
         })
@@ -294,7 +297,7 @@ class App extends React.Component {
     createDir = async (newDir) => {
         let fullPath = await join(this.state.activeFile, newDir)
         let result = await createDir(fullPath)
-        if(result != "ok") {
+        if (result != "ok") {
             Message.error(result)
             return
         }
@@ -318,6 +321,11 @@ class App extends React.Component {
     }
 
     render() {
+        if (this.state.rootDir.length < 1) {
+            return <div style={{ margin: '20% auto', textAlign:'center'}}>
+                <Button onClick={this.openFile} type="primary">Open Folder</Button>
+            </div>
+        }
         return (
             <div style={{ width: '90%', margin: '10px auto' }} onKeyUp={this.handleKeyUp} id="app">
                 <QuickDir
