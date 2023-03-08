@@ -8,6 +8,7 @@ import 'katex/dist/katex.css'
 import { readText } from '@tauri-apps/api/clipboard';
 import { IconObliqueLine, IconFolder, IconFile, IconEdit, IconSave } from '@arco-design/web-react/icon';
 import { open, ask, message } from '@tauri-apps/api/dialog';
+import { appWindow } from "@tauri-apps/api/window";
 import { mkConfigDir, setActiveFileCache, deleteActiveFileCache, getLoadConfig, setLoadConfig } from './util/fs'
 import { convertLocalImage } from './util/markdown'
 import { fmtFileList, genQuickDirs } from './util/common'
@@ -238,7 +239,7 @@ class App extends React.Component {
         }
         await this.loadDir(currentDir, "dir")
     }
-    ask2Save = async (relativePath) => {
+    ask2Save = async (relativePath, action) => {
         await Modal.confirm({
             simple: true,
             title: "保存提示",
@@ -247,13 +248,21 @@ class App extends React.Component {
             cancelText: "否，我要放弃",
             onOk: async () => {
                 await this.saveFile()
-                await this.quickSelect(relativePath)
+                if(action == "close") {
+                    await appWindow.close();
+                } else {
+                    await this.quickSelect(relativePath)
+                }
             },
             onCancel: async () => {
                 await this.setState({
-                    changed : false
+                    changed: false
                 })
-                await this.quickSelect(relativePath)
+                if(action == "close") {
+                    await appWindow.close();
+                } else {
+                    await this.quickSelect(relativePath)
+                }
             }
         })
     }
@@ -315,14 +324,20 @@ class App extends React.Component {
         }
     }
     listen = async () => {
-        const unlisten = await listen('open_folder', (event) => {
+        await listen('open_folder', (event) => {
             this.openFile()
         })
+        await appWindow.onCloseRequested(async (event) => {
+            if(this.state.mode == 'edit' && this.state.changed ) {
+                this.ask2Save("", "close")
+                event.preventDefault()
+            }
+        });
     }
 
     render() {
         if (this.state.rootDir.length < 1) {
-            return <div style={{ margin: '20% auto', textAlign:'center'}}>
+            return <div style={{ margin: '20% auto', textAlign: 'center' }}>
                 <Button onClick={this.openFile} type="primary">Open Folder</Button>
             </div>
         }
