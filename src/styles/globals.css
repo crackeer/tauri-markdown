@@ -1,0 +1,51 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  display: block;
+  margin: 0 auto;
+  width: 60%;
+  height: 60%;
+  text-align: center;
+}
+
+#app {
+    width: 90%;
+    margin: 10px auto;
+}
+
+#app .bytemd {
+  height: 90vh;
+  font-size: 16px;
+}
+.bytemd-editor {
+    width: 50%;
+}
+
+.bytemd-preview {
+    width: 50%;
+}
+
+.directory-item span {
+  vertical-align: top;
+  margin-left: 4px;
+  line-height: 40px;
+  font-size: 17px;
+  display: inline-block;
+}
+
+.directory-item:hover {
+  color: red;
+  cursor: pointer;
+  background-color: #e4e1e1;
+}
+
+.quick-dir .arco-space span {
+  font-size: 17px;
+}

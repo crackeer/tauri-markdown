@@ -1,0 +1,63 @@
+{
+  "name": "tauri-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@arco-design/web-react": "2.44.0",
+    "@bytemd/plugin-frontmatter": "^1.20.2",
+    "@bytemd/plugin-gemoji": "^1.20.2",
+    "@bytemd/plugin-math": "^1.20.2",
+    "@bytemd/plugin-medium-zoom": "^1.20.2",
+    "@tauri-apps/api": "^1.2.0",
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^13.3.0",
+    "dayjs": "^1.11.7",
+    "editor.md": "^1.5.0",
+    "github-markdown-css": "^5.2.0",
+    "highlight.js": "^11.7.0",
+    "katex": "^0.16.4",
+    "next": "^13.2.4",
+    "node-polyfill-webpack-plugin": "^2.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "rehype-urls": "^1.1.1",
+    "url": "^0.11.0",
+    "vditor": "^3.8.17",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "export": "next export",
+    "tauri": "tauri"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@bytemd/plugin-gfm": "^1.17.2",
+    "@bytemd/plugin-highlight": "^1.17.2",
+    "@bytemd/plugin-mermaid": "^1.17.2",
+    "@bytemd/react": "^1.17.2",
+    "@tauri-apps/cli": "^1.2.3",
+    "cross-env": "^7.0.3"
+  }
+}
