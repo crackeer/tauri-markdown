@@ -1,17 +1,19 @@
 import React from 'react';
-import "@arco-design/web-react/dist/css/arco.css";
 import { IconEdit, IconSave, IconArrowUp } from '@arco-design/web-react/icon';
-import { Button, Message, Affix, Modal, BackTop } from '@arco-design/web-react';
+import { Button, Message, Affix, Modal, Layout } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
 import { listen } from '@tauri-apps/api/event'
 import Editor from '@/component/MDEditor';
 import Viewer from '@/component/MDViewer';
 import FileList from '@/component/FileList';
+import Directory from '@/component/Directory';
 import QuickDir from '@/component/QuickDir';
 import { writeFile, readFile, simpleReadDir, setWindowTitle } from '../util/invoke'
 import { fmtFileList } from '@/util/common';
 import utilFs from '../util/fs'
 
+const Sider = Layout.Sider;
+const Content = Layout.Content;
 var theWindow = null
 var tauriApiPath = null
 
@@ -21,6 +23,7 @@ class App extends React.Component {
         this.state = {
             rootDir: '',
             fileList: [],
+            currentDir : '',
             activeFile: '',
             value: '',
             changed: false,
@@ -29,7 +32,6 @@ class App extends React.Component {
         }
     }
     async componentDidMount() {
-        
         theWindow = await require('@tauri-apps/api/window')
         tauriApiPath = await import('@tauri-apps/api/path')
         let object = await utilFs.getLoadConfig()
@@ -60,7 +62,7 @@ class App extends React.Component {
             fileList = fmtFileList(fileList, activeFile, tauriApiPath.sep)
             await this.setState({
                 fileList: fileList,
-                activeFile: activeFile,
+                currentDir: activeFile,
                 fileType: fileType,
                 mode: 'view'
             })
@@ -72,7 +74,6 @@ class App extends React.Component {
             await this.setState({
                 activeFile: activeFile,
                 fileType: fileType,
-                fileList: [],
                 value: data,
                 mode: 'view'
             })
@@ -117,7 +118,7 @@ class App extends React.Component {
         await setWindowTitle(this.state.activeFile)
     }
     clickFile = async (item) => {
-        let absPath = await tauriApiPath.join(this.state.activeFile, item.path)
+        let absPath = await tauriApiPath.join(this.state.currentDir, item.path)
         await this.loadDir(absPath, item.item_type)
     }
     quickSelect = async (relativePath) => {
@@ -125,6 +126,7 @@ class App extends React.Component {
             return await this.ask2Save(relativePath)
         }
         let currentDir = await tauriApiPath.join(this.state.rootDir, relativePath)
+        console.log(currentDir)
         if (relativePath == this.state.rootDir) {
             currentDir = this.state.rootDir
         }
@@ -203,7 +205,7 @@ class App extends React.Component {
                 <Affix offsetTop={0}>
                     <QuickDir
                         rootDir={this.state.rootDir}
-                        activeFile={this.state.activeFile}
+                        activeFile={this.state.currentDir}
                         sep={tauriApiPath.sep}
                         quickSelect={this.quickSelect}
                         fileType={this.state.fileType}
@@ -211,11 +213,26 @@ class App extends React.Component {
                     />
                 </Affix>
 
-                <ContentViewer context={this.state} method={{
-                    clickFile: this.clickFile,
-                    onInput: this.onInput,
-                }}></ContentViewer>
-
+                <Layout>
+                    <Sider
+                        resizeDirections={['right']}
+                        style={{
+                            minWidth: '18%',
+                            maxWidth: '25%',
+                            height: '100vh',
+                            overflow: 'scroll'
+                        }}
+                        size="small"
+                    >
+                        <Directory data={this.state.fileList} clickFile={this.clickFile} />
+                    </Sider>
+                    <Content onKeyUp={this.handleKeyUp}>
+                        <ContentViewer context={this.state} method={{
+                            clickFile: this.clickFile,
+                            onInput: this.onInput,
+                        }}></ContentViewer>
+                    </Content>
+                </Layout>
 
                 <div style={{ position: 'fixed', bottom: '50px', textAlign: 'center', right: '20px' }}>
                     <ContentAction context={this.state} method={{
@@ -236,17 +253,14 @@ export default App
 
 
 const ContentViewer = ({ context, method }) => {
-    if (context.fileType == 'dir') {
-        return <FileList data={context.fileList} clickFile={method.clickFile} />
-    }
     if (context.mode == 'edit') {
         return <>
             <Editor value={context.value} onChange={method.onInput} sep={tauriApiPath.sep} activeFile={context.activeFile} />
         </>
     }
-    return <>
+    return <div style={{ width: '90%', margin: '0 auto' }}>
         <Viewer value={context.value} sep={tauriApiPath.sep} activeFile={context.activeFile} />
-    </>
+    </div>
 }
 
 const ContentAction = ({ context, method }) => {

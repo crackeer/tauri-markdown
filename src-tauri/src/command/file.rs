@@ -72,12 +72,11 @@ pub fn simple_read_dir(dir: String, ext: String) -> Vec<FileItem> {
 #[tauri::command]
 pub fn write_media_file(dir: String, name : String, content: Vec<u8>) -> String {
     println!("{} - {}", dir,name);
-    let mut tmp_path = std::path::Path::new(&dir);
+    let tmp_path = std::path::Path::new(&dir);
     if let Err(err) = std::fs::create_dir_all(&tmp_path) {
         return err.to_string();
     }
     let path_buf = tmp_path.join(&name);
-    std::fs::write(tmp_path, &content.as_slice());
     if let Ok(mut file) = File::create(path_buf.as_path()) {
         if let Ok(_) = file.write_all(&content) {
             return String::from("ok")

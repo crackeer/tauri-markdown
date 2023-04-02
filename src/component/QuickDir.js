@@ -44,9 +44,9 @@ export default function (props) {
         relativeDirs[relativeDirs.length - 1].static = true
     }
     return <>
-        <Row className="quick-dir" style={{ zIndex: '10000', background: 'rgb(235, 235, 235)', padding: '3px 0', marginBottom: '10px' }}>
+        <Row className="quick-dir" style={{ zIndex: '10000', background: 'rgb(235, 235, 235)', padding: '1px 0'}}>
             <Col span={20}>
-                <Space split={<IconObliqueLine />} align={'center'} size={0} style={{ fontSize: '19px' }}>
+                <Space split={<IconObliqueLine />} align={'center'} size={0}>
                     <Link onClick={() => props.quickSelect(props.rootDir)} key={props.rootDir}>根目录</Link>
                     {
                         relativeDirs.map(item => {
@@ -61,10 +61,10 @@ export default function (props) {
                 </Space>
             </Col>
             {
-                props.fileType == "dir" ? <Col span={4} style={{ textAlign: 'right', fontSize: '16px' }}>
+                props.fileType == "dir" ? <Col span={4} style={{ textAlign: 'right' }}>
                     <Button type='text' onClick={() => {
                         setVisible(true)
-                    }}>新增</Button>
+                    }} size='small'>新增</Button>
                 </Col> : null
             }
         </Row>

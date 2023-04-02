@@ -1,5 +1,4 @@
 body {
-  margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -16,13 +15,12 @@ img {
 }
 
 #app {
-    width: 90%;
-    margin: 10px auto;
+    width: 100%;
+    margin: 0px auto;
 }
 
 #app .bytemd {
-  height: 90vh;
-  font-size: 16px;
+  height: calc(100%-25px);
 }
 .bytemd-editor {
     width: 50%;
@@ -32,11 +30,14 @@ img {
     width: 50%;
 }
 
+.directory {
+  padding-left: 3px;
+}
 .directory-item span {
   vertical-align: top;
   margin-left: 4px;
-  line-height: 40px;
-  font-size: 17px;
+  line-height: 30px;
+  font-size: 15px;
   display: inline-block;
 }
 
@@ -47,5 +48,5 @@ img {
 }
 
 .quick-dir .arco-space span {
-  font-size: 17px;
+  font-size: 15px;
 }
