@@ -26,7 +26,6 @@ class App extends React.Component {
         let object = await utilFs.getLoadConfig()
         this.initSelectFile(object)
         this.listen()
-        this.handleKeyUp.bind(this)
     }
     openDirectory = async () => {
         const {homeDir} = await import('@tauri-apps/api/path')
@@ -57,13 +56,11 @@ class App extends React.Component {
         })
     }
     handleKeyUp = async (event) => {
-        if (this.state.mode === 'edit') {
-            if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
-                event.preventDefault();
-                this.markdown.current.saveFile();
-            }
+        if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
+            event.preventDefault();
+            this.markdown.current.saveFile();
         }
-        if (event.key === "Shift") {
+        if (event.key === "Alt" && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
             this.markdown.current.switchMode()
         }

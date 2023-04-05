@@ -78,7 +78,7 @@ const Markdown = React.forwardRef((props, ref) => {
     }
 
     const saveFile = async () => {
-        if (mode === "edit") {
+        if (changed()) {
             await writeFile(activeFile, value)
             setOldValue(value)
             Message.success("保存成功")
@@ -86,7 +86,7 @@ const Markdown = React.forwardRef((props, ref) => {
     }
 
     const ask2Exit = async () => {
-        if (mode === "edit") {
+        if (changed()) {
             const { appWindow } = await require('@tauri-apps/api/window')
             Modal.confirm({
                 simple: true,
@@ -112,25 +112,7 @@ const Markdown = React.forwardRef((props, ref) => {
             setMode("edit");
             return
         }
-        if (changed()) {
-            Modal.confirm({
-                simple: true,
-                title: "保存提示",
-                content: "即将切换到阅读模式，当前编辑的文档还未保存？请选择",
-                okText: "是，立马保存",
-                cancelText: "否，我要放弃",
-                onOk: async () => {
-                    await writeFile(activeFile, value)
-                    setOldValue(value)
-                    setMode('view')
-                },
-                onCancel: async () => {
-                    setMode('view')
-                }
-            })
-        } else {
-            setMode('view')
-        }
+        setMode('view')
 
     }
 
