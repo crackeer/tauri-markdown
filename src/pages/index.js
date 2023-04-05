@@ -63,6 +63,14 @@ class App extends React.Component {
         if (event.key === "Alt" && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
             this.markdown.current.switchMode()
+            this.setState({
+                mode : this.state.mode == 'edit' ? 'view' : 'edit',
+            })
+            utilFs.setLoadConfig({
+                rootDir: this.state.rootDir,
+                activeFile: file,
+                mode: this.state.mode == 'edit' ? 'view' : 'edit',
+            })
         }
     }
    
