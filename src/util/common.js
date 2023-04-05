@@ -1,4 +1,4 @@
-var fmtFileList = (fileList, currentDir, seq) => {
+var sortFileList = (fileList) => {
     fileList = fileList.sort((a, b) => {
         if (a.item_type == b.item_type) {
             if (a.path < b.path) {
@@ -57,5 +57,5 @@ var getRelativePath = (currentDir, rootDir) => {
 }
 
 export {
-    fmtFileList, genQuickDirs, getRelativePath
+    sortFileList, genQuickDirs, getRelativePath
 }

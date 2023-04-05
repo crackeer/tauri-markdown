@@ -14,22 +14,42 @@ img {
   text-align: center;
 }
 
-#app {
-    width: 100%;
-    margin: 0px auto;
+.layout-body {
+  height: 100vh;
 }
 
-#app .bytemd {
-  height: calc(100%-25px);
+#app .content {
+  width: 96%;
+  margin: 5px auto;
+  padding-top: 14px;
 }
+
+#app .content-title {
+  padding-left: 10px;
+  background-color: aliceblue;
+}
+
+#app .content .bytemd {
+  height: 95vh;
+}
+
+.bytemd-editor .CodeMirror .CodeMirror-lines {
+  max-width: 999999px!important;
+}
+
+.bytemd-preview .markdown-body {
+  max-width: 999999px!important;
+}
+
 .bytemd-editor {
-    width: 50%;
+    width: 100%!important;
 }
 
 .bytemd-preview {
-    width: 50%;
+    display: none!important;
 }
 
+/*
 .directory {
   padding-left: 3px;
 }
@@ -50,3 +70,4 @@ img {
 .quick-dir .arco-space span {
   font-size: 15px;
 }
+*/

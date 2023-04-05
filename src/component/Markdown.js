@@ -11,7 +11,7 @@ import image from '../plugins/image'
 import mediumZoom from '@bytemd/plugin-medium-zoom'
 import gemoji from '@bytemd/plugin-gemoji'
 import frontmatter from '@bytemd/plugin-frontmatter'
-import { Editor } from '@bytemd/react'
+import { Editor, Viewer } from '@bytemd/react'
 import { uploadFile } from '../util/invoke'
 import dayjs from 'dayjs'
 
@@ -48,10 +48,14 @@ export default function (props) {
             }])
         })
     }
+    if(props.mode === 'view') {
+        return <Viewer value={props.value} plugins={[image(props.activeFile, props.sep), ...plugins]} />
+    }
+
     return <Editor
         value={props.value}
         plugins={[image(props.activeFile, props.sep), ...plugins]}
-        mode="auto"
+        mode="split"
         uploadImages={uploadImage}
         onChange={props.onChange} />
 }

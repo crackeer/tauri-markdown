@@ -1,15 +1,11 @@
 import React from 'react';
 import { IconEdit, IconSave, IconArrowUp } from '@arco-design/web-react/icon';
-import { Button, Message, Affix, Modal, Layout } from '@arco-design/web-react';
+import { Button, Message, Modal, Layout, Affix } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
 import { listen } from '@tauri-apps/api/event'
-import Editor from '@/component/MDEditor';
-import Viewer from '@/component/MDViewer';
-import FileList from '@/component/FileList';
-import Directory from '@/component/Directory';
-import QuickDir from '@/component/QuickDir';
+import Markdown from '@/component/Markdown';
+import TreeDirectory from '@/component/TreeDirectory';
 import { writeFile, readFile, simpleReadDir, setWindowTitle } from '../util/invoke'
-import { fmtFileList } from '@/util/common';
 import utilFs from '../util/fs'
 
 const Sider = Layout.Sider;
@@ -18,18 +14,23 @@ var theWindow = null
 var tauriApiPath = null
 
 class App extends React.Component {
+    tree = null;
     constructor(props) {
         super(props);
         this.state = {
             rootDir: '',
-            fileList: [],
-            currentDir : '',
+            currentDir: '',
             activeFile: '',
             value: '',
             changed: false,
             fileType: 'dir',
-            mode: ''
+            mode: '',
+            firstSetValue : false,
         }
+        this.tree = React.createRef()
+    }
+    updateWindowTitle () {
+        setWindowTitle(this.state.rootDir)
     }
     async componentDidMount() {
         theWindow = await require('@tauri-apps/api/window')
@@ -51,43 +52,28 @@ class App extends React.Component {
         await this.setState({
             rootDir: selected,
         })
-        await this.loadDir(selected, "dir")
+        this.tree.current.initData(selected)
+        this.updateWindowTitle()
     }
-    reload = async () => {
-        this.loadDir(this.state.activeFile, this.state.fileType)
-    }
-    loadDir = async (activeFile, fileType) => {
-        if (fileType == "dir") {
-            let fileList = await simpleReadDir(activeFile, ".md")
-            fileList = fmtFileList(fileList, activeFile, tauriApiPath.sep)
-            await this.setState({
-                fileList: fileList,
-                currentDir: activeFile,
-                fileType: fileType,
-                mode: 'view'
-            })
-            this.updateSelf()
-            return
+    clickFileX = async (file) => {
+        if(this.state.changed) {
+            this.ask2Save(file, "")
+            return 
         }
-        try {
-            let data = await readFile(activeFile)
-            await this.setState({
-                activeFile: activeFile,
-                fileType: fileType,
-                value: data,
-                mode: 'view'
-            })
-            this.updateSelf()
-        } catch (e) {
-            console.log("read file error", activeFile, e)
-        }
+        let data = await readFile(file)
+        await this.setState({
+            activeFile: file,
+            fileType: "file",
+            value: data,
+            changed: false,
+            firstSetValue : true,
+        })
+        this.updateSelf()
     }
     updateSelf = async () => {
-        setWindowTitle(this.state.activeFile)
         utilFs.setLoadConfig({
             rootDir: this.state.rootDir,
             activeFile: this.state.activeFile,
-            fileType: this.state.fileType,
             mode: this.state.mode,
         })
     }
@@ -115,24 +101,8 @@ class App extends React.Component {
             changed: false,
         })
         Message.success("保存成功")
-        await setWindowTitle(this.state.activeFile)
     }
-    clickFile = async (item) => {
-        let absPath = await tauriApiPath.join(this.state.currentDir, item.path)
-        await this.loadDir(absPath, item.item_type)
-    }
-    quickSelect = async (relativePath) => {
-        if (this.state.changed) {
-            return await this.ask2Save(relativePath)
-        }
-        let currentDir = await tauriApiPath.join(this.state.rootDir, relativePath)
-        console.log(currentDir)
-        if (relativePath == this.state.rootDir) {
-            currentDir = this.state.rootDir
-        }
-        await this.loadDir(currentDir, "dir")
-    }
-    ask2Save = async (relativePath, action) => {
+    ask2Save = async (activeFile, action) => {
         await Modal.confirm({
             simple: true,
             title: "保存提示",
@@ -144,7 +114,7 @@ class App extends React.Component {
                 if (action == "close") {
                     await theWindow.appWindow.close();
                 } else {
-                    await this.quickSelect(relativePath)
+                    await this.clickFileX(activeFile)
                 }
             },
             onCancel: async () => {
@@ -154,32 +124,32 @@ class App extends React.Component {
                 if (action == "close") {
                     await theWindow.appWindow.close();
                 } else {
-                    await this.quickSelect(relativePath)
+                    await this.clickFileX(activeFile)
                 }
             }
         })
     }
     onInput = async (str) => {
+        if(this.state.firstSetValue) {
+            await this.setState({
+                firstSetValue : false,
+            })
+            return
+        }
+        console.log("OnInput", str)
         await this.setState({
             changed: true,
             value: str
         })
-        setWindowTitle(this.state.activeFile + '(changed)')
     }
     initSelectFile = async (object) => {
         if (object == undefined || object.rootDir == undefined || object.rootDir.length < 1) {
-            //this.openFile()
             return
         }
-        let activeFile = object.activeFile
-        if (object.rootDir.length > 0) {
-            if (activeFile.length < 1) {
-                activeFile = object.rootDir
-            }
-            await this.setState({
-                rootDir: object.rootDir,
-            })
-            await this.loadDir(activeFile, object.fileType)
+        await this.setState(object)
+        this.updateWindowTitle()
+        if (object.activeFile) {
+            this.clickFileX(object.activeFile)
         }
     }
     listen = async () => {
@@ -201,36 +171,29 @@ class App extends React.Component {
             </div>
         }
         return (
-            <div onKeyUp={this.handleKeyUp} id="app">
-                <Affix offsetTop={0}>
-                    <QuickDir
-                        rootDir={this.state.rootDir}
-                        activeFile={this.state.currentDir}
-                        sep={tauriApiPath.sep}
-                        quickSelect={this.quickSelect}
-                        fileType={this.state.fileType}
-                        reload={this.reload}
-                    />
-                </Affix>
-
-                <Layout>
+            <div id="app">
+                <Layout className='layout-body'>
                     <Sider
                         resizeDirections={['right']}
                         style={{
-                            minWidth: '18%',
-                            maxWidth: '25%',
+                            minWidth: '20%',
+                            maxWidth: '40%',
                             height: '100vh',
-                            overflow: 'scroll'
+                            overflow: 'scroll',
+                            overflowX: 'hidden',
+                            paddingLeft: '10px'
                         }}
                         size="small"
                     >
-                        <Directory data={this.state.fileList} clickFile={this.clickFile} />
+                        <TreeDirectory rootDir={this.state.rootDir} clickFile={this.clickFileX} ref={this.tree} />
                     </Sider>
                     <Content onKeyUp={this.handleKeyUp}>
-                        <ContentViewer context={this.state} method={{
-                            clickFile: this.clickFile,
-                            onInput: this.onInput,
-                        }}></ContentViewer>
+                        <Affix offsetTop={1}>
+                            <div className='content-title'>{this.state.activeFile}</div>
+                        </Affix>
+                        <div className="content">
+                            <Markdown mode={this.state.mode} value={this.state.value} onChange={this.onInput} />
+                        </div>
                     </Content>
                 </Layout>
 
@@ -252,21 +215,7 @@ class App extends React.Component {
 export default App
 
 
-const ContentViewer = ({ context, method }) => {
-    if (context.mode == 'edit') {
-        return <>
-            <Editor value={context.value} onChange={method.onInput} sep={tauriApiPath.sep} activeFile={context.activeFile} />
-        </>
-    }
-    return <div style={{ width: '90%', margin: '0 auto' }}>
-        <Viewer value={context.value} sep={tauriApiPath.sep} activeFile={context.activeFile} />
-    </div>
-}
-
 const ContentAction = ({ context, method }) => {
-    if (context.fileType == 'dir') {
-        return null
-    }
     if (context.mode == 'edit') {
         return <div>
             <Button onClick={method.saveFile} icon={<IconSave />} shape='round' type='primary' size='large'></Button>
