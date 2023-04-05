@@ -1,3 +1,5 @@
+import React from 'react';
+
 import 'bytemd/dist/index.css'
 import { useEffect } from 'react'
 import 'highlight.js/styles/default.css'
@@ -12,50 +14,174 @@ import mediumZoom from '@bytemd/plugin-medium-zoom'
 import gemoji from '@bytemd/plugin-gemoji'
 import frontmatter from '@bytemd/plugin-frontmatter'
 import { Editor, Viewer } from '@bytemd/react'
-import { uploadFile } from '../util/invoke'
+import { uploadFile, readFile, writeFile } from '../util/invoke'
 import dayjs from 'dayjs'
+import { Modal, Message } from '@arco-design/web-react';
+import { message } from '@tauri-apps/api/dialog';
 
 const plugins = [
-    gfm(), highlight(), mermaid(), mediumZoom(), math(), gemoji(), frontmatter()
+    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter()
 ]
 
-var tauriApiPath = null
+const getUploadConfig = async (activeFile) => {
+    const { sep, join } = await import('@tauri-apps/api/path')
+    let parts = activeFile.split(sep)
+    parts[parts.length - 1] = "images"
+    let imageName = dayjs().format('YYYY-MM-DD-HH-mm-ss') + ".jpg"
+    let dir = await join(...parts)
+    return {
+        uploadDir: dir,
+        fileName: imageName,
+        mdFile: "images/" + imageName
+    }
+}
 
-export default function (props) {
-    useEffect(() => {
-        async function setup() {
-            tauriApiPath = await require('@tauri-apps/api/path')
+const Markdown = React.forwardRef((props, ref) => {
+    const [value, setValue] = React.useState("");
+    const [mode, setMode] = React.useState("");
+    const [oldValue, setOldValue] = React.useState("");
+    const [activeFile, setActiveFile] = React.useState("");
+    const [sep, setSep] = React.useState("/");
+
+    const changed = () => {
+        return oldValue != value
+    }
+    const switchNewFile = async (newFile) => {
+        if (changed()) {
+            ask2Switch(newFile)
+        } else {
+            initValue(newFile)
         }
-        setup()
-    }, [])
-    async function uploadImage(files) {
-        
+    }
+    const ask2Switch = async (newFile) => {
+        Modal.confirm({
+            simple: true,
+            title: "保存提示",
+            content: "即将切换到其他文档，当前编辑的文档还未保存？请选择",
+            okText: "是，立马保存",
+            cancelText: "否，我要放弃",
+            onOk: async () => {
+                if (activeFile.length > 0) {
+                    await writeFile(activeFile, value)
+                }
+                if (newFile != null && newFile.length > 0) {
+                    initValue(newFile)
+                }
+
+            },
+            onCancel: async () => {
+                if (newFile != null && newFile.length > 0) {
+                    initValue(newFile)
+                }
+            }
+        })
+    }
+
+    const saveFile = async () => {
+        if (mode === "edit") {
+            await writeFile(activeFile, value)
+            setOldValue(value)
+            Message.success("保存成功")
+        }
+    }
+
+    const ask2Exit = async () => {
+        if (mode === "edit") {
+            const { appWindow } = await require('@tauri-apps/api/window')
+            Modal.confirm({
+                simple: true,
+                title: "保存提示",
+                content: "即将关闭应用，当前编辑的文档还未保存？请选择",
+                okText: "是，立马保存",
+                cancelText: "否，我要放弃",
+                onOk: async () => {
+                    if (activeFile.length > 0) {
+                        await writeFile(activeFile, value)
+                    }
+                    appWindow.close();
+                },
+                onCancel: async () => {
+                    appWindow.close();
+                }
+            })
+        }
+    }
+
+    const switchMode = async (newMode) => {
+        if (mode === "view" || mode.length < 1) {
+            setMode("edit");
+            return
+        }
+        if (changed()) {
+            Modal.confirm({
+                simple: true,
+                title: "保存提示",
+                content: "即将切换到阅读模式，当前编辑的文档还未保存？请选择",
+                okText: "是，立马保存",
+                cancelText: "否，我要放弃",
+                onOk: async () => {
+                    await writeFile(activeFile, value)
+                    setOldValue(value)
+                    setMode('view')
+                },
+                onCancel: async () => {
+                    setMode('view')
+                }
+            })
+        } else {
+            setMode('view')
+        }
+
+    }
+
+    async function doUploadImages(files) {
         let buffer = await files[0].arrayBuffer()
         let view = new Uint8Array(buffer);
         let list = []
         for (var i in view) {
             list.push(view[i])
         }
-        let parts = props.activeFile.split(props.sep)
-        parts[parts.length - 1] = "images"
-        let imageName = dayjs().format('YYYY-MM-DD-HH-mm-ss') + ".jpg"
-        let dir = await tauriApiPath.join(...parts)
-        await uploadFile(dir, imageName, list)
+        let uploadConfig = await getUploadConfig(activeFile)
+        await uploadFile(uploadConfig.uploadDir, uploadConfig.fileName, list)
         return new Promise((resolve, _) => {
             resolve([{
-                url: "image/" + imageName,
-                title: imageName
+                url: uploadConfig.mdFile,
+                title: uploadConfig.fileName
             }])
         })
     }
-    if(props.mode === 'view') {
-        return <Viewer value={props.value} plugins={[image(props.activeFile, props.sep), ...plugins]} />
+    const initValue = async (file, mode) => {
+        const { sep } = await import('@tauri-apps/api/path')
+        let data = await readFile(file)
+        setSep(sep)
+        setValue(data)
+        setOldValue(data)
+        setActiveFile(file)
+        if (mode != null && mode.length > 0) {
+            setMode(mode)
+        }
+    }
+
+    useEffect(() => {
+        initValue(props.file, props.mode)
+    }, [])
+    React.useImperativeHandle(
+        ref,
+        () => ({ initValue, switchNewFile, changed, ask2Exit, saveFile, switchMode })
+    );
+
+    if (mode === 'view') {
+        return <Viewer value={value} plugins={[image(activeFile, sep), ...plugins]} />
     }
 
     return <Editor
-        value={props.value}
-        plugins={[image(props.activeFile, props.sep), ...plugins]}
+        value={value}
+        plugins={[image(activeFile, sep), ...plugins]}
         mode="split"
-        uploadImages={uploadImage}
-        onChange={props.onChange} />
-}
+        uploadImages={doUploadImages}
+        onChange={(val) => {
+            setValue(val)
+        }} />
+})
+
+export default Markdown;

@@ -2,8 +2,7 @@ import React from 'react';
 import { Tree } from '@arco-design/web-react';
 import { simpleReadDir } from '../util/invoke'
 import { sortFileList } from '@/util/common';
-import { IconDown, IconDragArrow, IconDriveFile } from '@arco-design/web-react/icon';
-const TreeNode = Tree.Node;
+import { IconDown } from '@arco-design/web-react/icon';
 
 
 const getSubDir = async (dir) => {
@@ -23,12 +22,13 @@ const getSubDir = async (dir) => {
     return children
 }
 
-const App = React.forwardRef((props, ref) => {
+const TreeDirectory = React.forwardRef((props, ref) => {
     const [treeData, setTreeData] = React.useState([]);
     React.useImperativeHandle(
         ref,
         () => ({ initData })
     );
+
     var initData = async (dir) => {
         let children = await getSubDir(dir)
         const { sep } = await import('@tauri-apps/api/path')
@@ -65,4 +65,4 @@ const App = React.forwardRef((props, ref) => {
     }} size='small' actionOnClick={['expand', 'select']} ></Tree>;
 })
 
-export default App;
+export default TreeDirectory;

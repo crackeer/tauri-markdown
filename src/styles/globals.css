@@ -1,11 +1,3 @@
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 img {
   display: block;
   margin: 0 auto;
@@ -48,26 +40,3 @@ img {
 .bytemd-preview {
     display: none!important;
 }
-
-/*
-.directory {
-  padding-left: 3px;
-}
-.directory-item span {
-  vertical-align: top;
-  margin-left: 4px;
-  line-height: 30px;
-  font-size: 15px;
-  display: inline-block;
-}
-
-.directory-item:hover {
-  color: red;
-  cursor: pointer;
-  background-color: #e4e1e1;
-}
-
-.quick-dir .arco-space span {
-  font-size: 15px;
-}
-*/
