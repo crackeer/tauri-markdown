@@ -68,7 +68,7 @@ class App extends React.Component {
             })
             utilFs.setLoadConfig({
                 rootDir: this.state.rootDir,
-                activeFile: file,
+                activeFile: this.state.activeFile,
                 mode: this.state.mode == 'edit' ? 'view' : 'edit',
             })
         }
