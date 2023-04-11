@@ -60,7 +60,7 @@ class App extends React.Component {
             event.preventDefault();
             this.markdown.current.saveFile();
         }
-        if (event.key === "Alt" && (event.ctrlKey || event.metaKey)) {
+        if (event.key === "Alt") {
             event.preventDefault();
             this.markdown.current.switchMode()
             this.setState({

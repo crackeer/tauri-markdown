@@ -86,8 +86,8 @@ const Markdown = React.forwardRef((props, ref) => {
     }
 
     const ask2Exit = async () => {
+        const { appWindow } = await require('@tauri-apps/api/window')
         if (changed()) {
-            const { appWindow } = await require('@tauri-apps/api/window')
             Modal.confirm({
                 simple: true,
                 title: "保存提示",
@@ -104,6 +104,8 @@ const Markdown = React.forwardRef((props, ref) => {
                     appWindow.close();
                 }
             })
+        } else {
+            appWindow.close();
         }
     }
 
