@@ -37,11 +37,7 @@ const TreeDirectory = React.forwardRef((props, ref) => {
         if(parts[parts.length - 1].length < 1) {
             title = parts.join('')
         }
-        setTreeData([{
-            title: title,
-            children: children,
-            key: dir,
-        }])
+        setTreeData(children)
     }
     const loadMore = async (treeNode) => {
         if(treeNode.props.children != undefined) {
@@ -56,7 +52,7 @@ const TreeDirectory = React.forwardRef((props, ref) => {
 
     return <Tree icons={{
         switcherIcon: <IconDown />,
-    }} autoExpandParent={true} defaultExpandedKeys={[props.rootDir]} defaultSelectedKeys={[props.rootDir]} loadMore={loadMore} treeData={treeData} onSelect={(value, info) => {
+    }} autoExpandParent={true} defaultExpandedKeys={[props.rootDir]}  loadMore={loadMore} treeData={treeData} onSelect={(value, info) => {
         if (info.node.props.isLeaf) {
             props.clickFile(info.node.props.dataRef.key)
         }
