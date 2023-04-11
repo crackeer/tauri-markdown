@@ -11,14 +11,13 @@ img {
 }
 
 #app .content {
-  width: 96%;
+  width: 85%;
   margin: 5px auto;
-  padding-top: 14px;
 }
 
 #app .content-title {
   padding-left: 10px;
-  background-color: aliceblue;
+  background-color: #CCCCCC;
 }
 
 #app .content .bytemd {

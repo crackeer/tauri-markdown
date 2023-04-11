@@ -54,8 +54,6 @@ const TreeDirectory = React.forwardRef((props, ref) => {
         initData(props.rootDir)
     }, [])
 
-    console.log("TreeData", treeData)
-
     return <Tree icons={{
         switcherIcon: <IconDown />,
     }} autoExpandParent={true} defaultExpandedKeys={[props.rootDir]} defaultSelectedKeys={[props.rootDir]} loadMore={loadMore} treeData={treeData} onSelect={(value, info) => {

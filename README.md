@@ -35,19 +35,11 @@ cargo tauri dev
 ```
 
 ##  Preview
-- list page
+- Markdown Preview Mode
 
-[![ppEI4IK.png](https://s1.ax1x.com/2023/03/05/ppEI4IK.png)](https://imgse.com/i/ppEI4IK)
+[![ppOrRzj.png](https://s1.ax1x.com/2023/04/11/ppOrRzj.png)](https://imgse.com/i/ppOrRzj)
 
-- markdown page
+-  Markdown Edit Mode
 
-[![ppEIqsA.png](https://s1.ax1x.com/2023/03/05/ppEIqsA.png)](https://imgse.com/i/ppEIqsA)
+[![ppOrIe0.png](https://s1.ax1x.com/2023/04/11/ppOrIe0.png)](https://imgse.com/i/ppOrIe0)
 
-- create new file or directory
-
-[![ppEq4II.png](https://s1.ax1x.com/2023/03/05/ppEq4II.png)](https://imgse.com/i/ppEq4II)
-
-## What's the next？
-
-- connect your `home` dir to some github repository 
-- push your changes to github repository

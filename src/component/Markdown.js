@@ -17,7 +17,6 @@ import { Editor, Viewer } from '@bytemd/react'
 import { uploadFile, readFile, writeFile } from '../util/invoke'
 import dayjs from 'dayjs'
 import { Modal, Message } from '@arco-design/web-react';
-import { message } from '@tauri-apps/api/dialog';
 
 const plugins = [
     gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter()
@@ -39,11 +38,14 @@ const getUploadConfig = async (activeFile) => {
 const Markdown = React.forwardRef((props, ref) => {
     const [value, setValue] = React.useState("");
     const [mode, setMode] = React.useState("");
-    const [oldValue, setOldValue] = React.useState("");
+    const [oldValue, setOldValue] = React.useState(false);
     const [activeFile, setActiveFile] = React.useState("");
     const [sep, setSep] = React.useState("/");
 
     const changed = () => {
+        console.log("Old value", oldValue)
+        console.log("New value", value)
+        console.log(oldValue != value)
         return oldValue != value
     }
     const switchNewFile = async (newFile) => {
