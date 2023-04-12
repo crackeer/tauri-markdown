@@ -21,7 +21,7 @@ img {
 }
 
 #app .content .bytemd {
-  height: 95vh;
+  height: 99vh;
 }
 
 .bytemd-editor .CodeMirror .CodeMirror-lines {
@@ -36,6 +36,6 @@ img {
     width: 100%!important;
 }
 
-.bytemd-preview {
-    display: none!important;
+.bytemd-status-right label, .bytemd-toolbar-right, .bytemd-preview {
+  display: none!important;
 }

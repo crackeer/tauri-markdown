@@ -42,13 +42,14 @@ class App extends React.Component {
             rootDir: selected,
         })
         this.directory.current.initData(selected)
-        setWindowTitle(selected)
     }
     clickFileX = async (file) => {
         this.markdown.current.switchNewFile(file)
         await this.setState({
             activeFile: file,
         })
+        setWindowTitle(file)
+
         utilFs.setLoadConfig({
             rootDir: this.state.rootDir,
             activeFile: file,
@@ -79,7 +80,9 @@ class App extends React.Component {
             return
         }
         await this.setState(object)
-        setWindowTitle(object.rootDir)
+        if(object.activeFile.length > 0) {
+            setWindowTitle(object.activeFile)
+        }
     }
     listen = async () => {
         await listen('open_folder', (event) => {
@@ -116,9 +119,6 @@ class App extends React.Component {
                         <TreeDirectory rootDir={this.state.rootDir} clickFile={this.clickFileX} ref={this.directory} />
                     </Sider>
                     <Content>
-                        <Affix offsetTop={1}>
-                            <div className='content-title'>{this.state.activeFile}</div>
-                        </Affix>
                         <div className="content">
                             <Markdown mode={this.state.mode} file={this.state.activeFile}  ref={this.markdown}/>
                         </div>
