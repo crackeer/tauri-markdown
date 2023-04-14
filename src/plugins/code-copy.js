@@ -5,7 +5,6 @@ export default function copyCode(options) {
     function createElement(tag, innerHTML, className, id) {
         const element = document.createElement(tag)
         element.className = className
-        element.id = id
         element.innerHTML = innerHTML
         return element
     }
@@ -28,9 +27,7 @@ export default function copyCode(options) {
         viewerEffect({ markdownBody }) {
             (async (markdownBody) => {
                 const els = markdownBody.querySelectorAll('pre')
-                els.forEach(el => {
-                    console.log(el, typeof el);
-                    
+                els.forEach(el => {                    
                     const operateBtn = createElement('button', 'copy', 'copy-btn')
                     copyCode(operateBtn)
                     el.appendChild(operateBtn)
