@@ -10,6 +10,8 @@ import mermaid from '@bytemd/plugin-mermaid';
 import gfm from '@bytemd/plugin-gfm'
 import math from '@bytemd/plugin-math'
 import image from '../plugins/image'
+import copyCode from '../plugins/code-copy'
+
 import mediumZoom from '@bytemd/plugin-medium-zoom'
 import gemoji from '@bytemd/plugin-gemoji'
 import frontmatter from '@bytemd/plugin-frontmatter'
@@ -17,9 +19,10 @@ import { Editor, Viewer } from '@bytemd/react'
 import { uploadFile, readFile, writeFile } from '../util/invoke'
 import dayjs from 'dayjs'
 import { Modal, Message } from '@arco-design/web-react';
+import { md5 } from '@/util/common';
 
 const plugins = [
-    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter()
+    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), copyCode(),
 ]
 
 const getUploadConfig = async (activeFile) => {
@@ -43,9 +46,7 @@ const Markdown = React.forwardRef((props, ref) => {
     const [sep, setSep] = React.useState("/");
 
     const changed = () => {
-        console.log("Old value", oldValue)
-        console.log("New value", value)
-        console.log(oldValue != value)
+        console.log("changed", oldValue.length, value.length)
         return oldValue != value
     }
     const switchNewFile = async (newFile) => {
@@ -82,7 +83,6 @@ const Markdown = React.forwardRef((props, ref) => {
     const saveFile = async () => {
         if (changed()) {
             await writeFile(activeFile, value)
-            setOldValue(value)
             Message.success("保存成功")
         }
     }
@@ -143,6 +143,7 @@ const Markdown = React.forwardRef((props, ref) => {
         setValue(data)
         setOldValue(data)
         setActiveFile(file)
+        console.log("initValue", data.length)
         if (mode != null && mode.length > 0) {
             setMode(mode)
         }
@@ -167,6 +168,7 @@ const Markdown = React.forwardRef((props, ref) => {
         uploadImages={doUploadImages}
         onChange={(val) => {
             setValue(val)
+            console.log("Change",val.length, val)
         }} />
 })
 

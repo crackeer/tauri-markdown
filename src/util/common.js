@@ -1,3 +1,5 @@
+const crypto = require('crypto');  
+
 var sortFileList = (fileList) => {
     fileList = fileList.sort((a, b) => {
         if (a.item_type == b.item_type) {
@@ -14,40 +16,6 @@ var sortFileList = (fileList) => {
     return fileList
 }
 
-var genQuickDirs = (rootDir, currentDir, maxSize, sep) => {
-    let relativePath = getRelativePath(currentDir, rootDir)
-
-    let parts = relativePath.split(sep)
-
-    let list = []
-    if (relativePath.length < 1) {
-        return list
-    }
-    let afterList = []
-    for (var i = 0; i < parts.length; i++) {
-        if (parts[i].length > 0) {
-            afterList.push({
-                path: parts.slice(0, i + 1).join(sep),
-                name: parts[i]
-            })
-        }
-    }
-    let startAppendIndex = 0
-    if (afterList.length > maxSize) {
-        let firstIndex = afterList.length - maxSize
-        list.push({
-            name: "...",
-            path: afterList[firstIndex].path
-        })
-        startAppendIndex = firstIndex + 1
-    }
-
-    for (var i = startAppendIndex; i < afterList.length; i++) {
-        list.push(afterList[i])
-    }
-
-    return list
-}
 
 var getRelativePath = (currentDir, rootDir) => {
     if (currentDir == rootDir) {
@@ -56,6 +24,24 @@ var getRelativePath = (currentDir, rootDir) => {
     return currentDir.substr(rootDir.length)
 }
 
+var md5 = (str) => {
+
+    // 创建MD5对象  
+    let md5 = crypto.createHash('md5');  
+      
+    // 将字符串转换为字节数组  
+    let bytes = str.split('').map(char => char.charCodeAt(0).toString(16)).join('');  
+            
+    return md5.update(bytes).digest('hex');  
+  
+}
+
+var calculateCRC32 = (data) => {  
+  const crc32 = new Uint32Array(data);  
+  const crc32Value = crc32.reduce((acc, curr) => acc ^ curr, 0);  
+  return crc32Value;  
+}  
+
 export {
-    sortFileList, genQuickDirs, getRelativePath
+    sortFileList, getRelativePath, md5, calculateCRC32
 }
