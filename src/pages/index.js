@@ -116,7 +116,7 @@ class App extends React.Component {
                         }}
                         size="small"
                     >
-                        <TreeDirectory rootDir={this.state.rootDir} clickFile={this.clickFileX} ref={this.directory} />
+                        <TreeDirectory rootDir={this.state.rootDir} clickFile={this.clickFileX} ref={this.directory} activeFile={this.state.activeFile}/>
                     </Sider>
                     <Content>
                         <div className="content">

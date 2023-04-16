@@ -93,6 +93,7 @@ pub fn create_dir(file_path: String) -> String {
         String::from("ok")
     }
 }
+
 #[tauri::command]
 pub fn create_file(file_path: String) -> String {
     if let Err(err) = File::create(String::from(file_path)) {
@@ -101,3 +102,31 @@ pub fn create_file(file_path: String) -> String {
         String::from("ok")
     }
 }
+
+#[tauri::command]
+pub fn delete_file(file_path: String) -> String {
+    if let Err(err) =  fs::remove_file(String::from(file_path)) {
+        String::from(err.to_string())
+    } else {
+        String::from("ok")
+    }
+}
+
+#[tauri::command]
+pub fn delete_folder(file_path: String) -> String {
+    if let Err(err) =  fs::remove_dir_all(String::from(file_path)) {
+        String::from(err.to_string())
+    } else {
+        String::from("ok")
+    }
+}
+
+#[tauri::command]
+pub fn rename_file(file_path: String, new_file_path : String) -> String {
+    if let Err(err) =  fs::rename(String::from(file_path), String::from(new_file_path)) {
+        String::from(err.to_string())
+    } else {
+        String::from("ok")
+    }
+}
+

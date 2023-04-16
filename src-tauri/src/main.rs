@@ -7,19 +7,24 @@ mod command;
 use std::vec;
 
 use command::file::{
-    create_dir, create_file, get_file_content, simple_read_dir, write_file,
-    write_media_file,
+    create_dir, create_file, delete_file, delete_folder, get_file_content, rename_file,
+    simple_read_dir, write_file, write_media_file,
 };
-use tauri::{CustomMenuItem, Menu, Submenu, MenuItem};
+use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 use tauri::{Window, WindowMenuEvent};
 
 fn main() {
     // 这里 `"quit".to_string()` 定义菜单项 ID，第二个参数是菜单项标签。
     let close = CustomMenuItem::new("open_folder".to_string(), "Open Folder");
     let submenu = Submenu::new("File", Menu::new().add_item(close));
-    let native_menu = Submenu::new("System", Menu::new().add_native_item(MenuItem::Copy).add_native_item(MenuItem::Paste).add_native_item(MenuItem::Cut));
-    let menu = Menu::new()
-        .add_submenu(native_menu).add_submenu(submenu);
+    let native_menu = Submenu::new(
+        "System",
+        Menu::new()
+            .add_native_item(MenuItem::Copy)
+            .add_native_item(MenuItem::Paste)
+            .add_native_item(MenuItem::Cut),
+    );
+    let menu = Menu::new().add_submenu(native_menu).add_submenu(submenu);
     //let menu = Menu::os_default(&"sss");
     let ctx = tauri::generate_context!();
     tauri::Builder::default()
@@ -31,6 +36,9 @@ fn main() {
             write_media_file,
             create_dir,
             create_file,
+            delete_file,
+            delete_folder,
+            rename_file
         ])
         .menu(menu)
         .on_menu_event(window_menu_event)
@@ -55,6 +63,6 @@ fn window_menu_event(event: WindowMenuEvent) {
         "open_folder" => {
             _ = event.window().emit("open_folder", "Open Folder");
         }
-        &_ => todo!()
+        &_ => todo!(),
     }
 }

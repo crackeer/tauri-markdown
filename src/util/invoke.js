@@ -40,26 +40,52 @@ var setWindowTitle = async (title) => {
 var uploadFile = async (dir, name, content) => {
     let result = await invoke('write_media_file', {
         dir: dir,
-        name : name,
-        content : content,
+        name: name,
+        content: content,
     })
     return result
 }
 
 var createFile = async (file_path) => {
     let result = await invoke('create_file', {
-        filePath : file_path, 
+        filePath: file_path,
+    })
+    return result
+}
+
+var deleteFile = async (file_path) => {
+    let result = await invoke('delete_file', {
+        filePath: file_path,
+    })
+    return result
+}
+
+var deleteFolder = async (file_path) => {
+    let result = await invoke('delete_folder', {
+        filePath: file_path,
     })
     return result
 }
 
 var createDir = async (file_path) => {
     let result = await invoke('create_dir', {
-        filePath : file_path,
+        filePath: file_path,
     })
     return result
 }
 
+
+var renameFile = async (filePath, newFilePath) => {
+    let result = await invoke('rename_file', {
+        filePath: filePath,
+        newFilePath: newFilePath
+    })
+    return result
+}
+
+
+
+
 export {
-    writeFile, readFile, readDir, simpleReadDir, setWindowTitle, uploadFile, createFile, createDir
+    writeFile, readFile, readDir, simpleReadDir, setWindowTitle, uploadFile, createFile, createDir, deleteFile, deleteFolder, renameFile
 }
