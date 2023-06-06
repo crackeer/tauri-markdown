@@ -88,23 +88,19 @@ class ClassApp extends React.Component {
                     }}
                 >
                     <Menu onClickMenuItem={this.clickMenuItem} theme='dark'>
-                        <a href="/inspire/ok">
+                        <a href="/">
                             <MenuItem key='main'>
                                 主页
                             </MenuItem>
                         </a>
-                        <a href="/markdown/detail">
+                        <a href="/markdown/">
                             <MenuItem key='markdown'>
                                 Markdown
                             </MenuItem>
                         </a>
-                        <MenuItem key='0_2'>
-                            <IconCalendar />
-                            Menu 2
-                        </MenuItem>
                     </Menu>
                 </Sider>
-                <Layout style={{ marginLeft: this.state.marginLeft }}>
+                <Layout style={{ marginLeft: this.state.marginLeft, padding:'10px' }}>
                     {this.state.headTitle}
                     <Divider style={{ margin: '0 0 20px' }}></Divider>
                     <Component {...pageProps} ref={this.refUpdate} />
