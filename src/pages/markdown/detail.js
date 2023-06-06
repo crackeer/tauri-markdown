@@ -4,9 +4,8 @@ import { open } from '@tauri-apps/api/dialog';
 import { listen } from '@tauri-apps/api/event'
 import Markdown from '@/component/Markdown';
 import TreeDirectory from '@/component/TreeDirectory';
-import { setWindowTitle } from '../util/invoke'
-import utilFs from '../util/fs'
-
+import { setWindowTitle } from '../../util/invoke'
+import utilFs from '../../util/fs'
 
 
 const Sider = Layout.Sider;
