@@ -1,6 +1,7 @@
 import { writeTextFile, BaseDirectory, readTextFile, readDir, createDir, removeFile } from '@tauri-apps/api/fs';
 
 const MenuCollapsed = "MenuCollapsed";
+const MarkdownFiles = "MarkdownFiles";
 
 var get = async (key) => {
     try {
@@ -28,8 +29,23 @@ var setMenuCollapsed = async (value) => {
     return set(MenuCollapsed, value +'')
 }
 
+var setMarkdownFiles = async (list) => {
+    return set(MarkdownFiles, JSON.stringify(list))
+}
+var getMarkdownFiles = async () => {
+    let value = await get(MarkdownFiles)
+    if(value.length < 1) {
+        return []
+    }
+    return JSON.parse(value)
+
+}
+
 
 
 export default {
-    getMenuCollapsed, setMenuCollapsed
+    getMenuCollapsed,
+    setMenuCollapsed, 
+    getMarkdownFiles,
+    setMarkdownFiles
 }
