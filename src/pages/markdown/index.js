@@ -86,6 +86,7 @@ class App extends React.Component {
         }
     }
     listen = async () => {
+        return
         await listen('open_folder', (event) => {
             this.openDirectory()
         })

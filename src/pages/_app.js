@@ -3,6 +3,7 @@ import '@/styles/globals.css'
 import "@arco-design/web-react/dist/css/arco.css";
 import { Layout, Menu, Divider } from '@arco-design/web-react';
 import { IconHome, IconCalendar } from '@arco-design/web-react/icon';
+import cache from '@/util/cache';
 const Sider = Layout.Sider;
 const MenuItem = Menu.Item;
 
@@ -34,7 +35,7 @@ class ClassApp extends React.Component {
         }
     }
     componentDidMount = async () => {
-        let collapsed = localStorage.getItem('collapsed') > 0
+        let collapsed = await cache.getMenuCollapsed() > 0
         await this.setState({
             collapsed: collapsed,
             marginLeft: getMarginLeft(collapsed)
@@ -52,19 +53,10 @@ class ClassApp extends React.Component {
             collapsed: value,
             marginLeft: getMarginLeft(value),
         })
+        cache.setMenuCollapsed(value ? 1 : 0)
     }
     clickMenuItem = async (key) => {
-        let location = getLocationByMenuKey(key)
-        if (location == null) {
-            return
-        }
-        return
-        alert(location)
-        const { WebviewWindow } = await require('@tauri-apps/api/window')
-        const webview = new WebviewWindow('theUniqueLabel', {
-            url: location,
-            transparent: true,
-        });
+        
     }
     render() {
         const { Component, pageProps } = this.props
@@ -90,7 +82,7 @@ class ClassApp extends React.Component {
                     <Menu onClickMenuItem={this.clickMenuItem} theme='dark'>
                         <a href="/">
                             <MenuItem key='main'>
-                                主页
+                                <IconHome/>主页
                             </MenuItem>
                         </a>
                         <a href="/markdown/">

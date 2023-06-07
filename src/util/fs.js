@@ -23,6 +23,7 @@ var getLoadConfig = async () => {
     }
 }
 
+
 export default {
    getLoadConfig, setLoadConfig
 }
