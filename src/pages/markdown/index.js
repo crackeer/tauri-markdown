@@ -1,9 +1,8 @@
 import React from 'react';
-import { Button, Layout, Affix, List } from '@arco-design/web-react';
+import { Button, Modal, Affix, List } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
 import { listen } from '@tauri-apps/api/event'
 import Markdown from '@/component/Markdown';
-import TreeDirectory from '@/component/TreeDirectory';
 import { setWindowTitle } from '../../util/invoke'
 import utilFs from '../../util/fs'
 import cache from '@/util/cache';
@@ -15,6 +14,7 @@ class App extends React.Component {
         super(props);
         this.state = {
             rootDir: '',
+            visible: false,
             activeFile: '',
             mode: 'view',
             files: []
@@ -41,37 +41,88 @@ class App extends React.Component {
                 extensions: ['md']
             }],
         });
-        for(var i in this.state.files) {
+        for (var i in this.state.files) {
             selected.push(this.state.files[i])
         }
-       
+
         await this.setState({
             files: selected
         })
         cache.setMarkdownFiles(selected)
     }
+    toEdit = async (item, index) => {
+        this.setState({
+            activeFile: item,
+            mode: 'edit',
+            visible: true
+        })
+    }
+    toDelete = async (item, index) => {
+        let data = this.state.files.filter(temp => {
+            return temp != item
+        })
+        this.setState({
+            files: data
+        })
+    }
 
     render() {
         return (
-            <>
+            <div class="app">
                 <div>
                     <Button onClick={this.openDirectory} type="primary">打开markdown</Button>
                 </div>
-                <List dataSource={this.state.files} render={render.bind(null, [
-                    <span className='list-demo-actions-icon'>
-                        <IconEdit />
-                    </span>,
-                    <span className='list-demo-actions-icon'>
-                        <IconDelete />
-                    </span>
-                ])} />
-            </>
+                <List dataSource={this.state.files} render={render.bind(null, this.toEdit, this.toDelete)} />
+
+                <Modal
+                    title={
+                        <div style={{ textAlign: 'left' }}>
+                            {this.state.activeFile}
+                        </div>}
+                    visible={this.state.visible}
+                    alignCenter={false}
+                    escToExit={false}
+                    style={{ width: '80%', top: '20px', height: '90%' }}
+                    footer={
+                        <>
+                            <Button
+                                onClick={() => {
+                                }}
+                            >
+                                Return
+                            </Button>
+                            <Button
+                                onClick={() => {
+
+                                }}
+                                type='primary'
+                            >
+                                Submit
+                            </Button>
+                        </>
+                    }
+                    onCancel={() => {
+                        this.setState({
+                            visible: false,
+                        })
+                    }}
+                >
+                    <Markdown file={this.state.activeFile} mode={this.state.mode}/>
+                </Modal>
+            </div>
         )
     }
 }
 
-const render = (actions, item, index) => (
-    <List.Item key={index} actions={actions}>
+const render = (editFn, deleteFn, item, index) => (
+    <List.Item key={index} actions={[
+        <span className='list-demo-actions-icon' onClick={editFn.bind(null, item, index)}>
+            <IconEdit />
+        </span>,
+        <span className='list-demo-actions-icon' onClick={deleteFn.bind(null, item, index)}>
+            <IconDelete />
+        </span>
+    ]}>
         <List.Item.Meta
             title={item}
         />
