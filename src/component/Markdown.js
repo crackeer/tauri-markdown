@@ -22,7 +22,7 @@ import { Modal, Message } from '@arco-design/web-react';
 import { md5 } from '@/util/common';
 
 const plugins = [
-    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), copyCode(),
+    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter()
 ]
 
 const getUploadConfig = async (activeFile) => {
@@ -46,38 +46,7 @@ const Markdown = React.forwardRef((props, ref) => {
     const [sep, setSep] = React.useState("/");
 
     const changed = () => {
-        console.log("changed", oldValue.length, value.length)
         return oldValue != value
-    }
-    const switchNewFile = async (newFile) => {
-        if (changed()) {
-            ask2Switch(newFile)
-        } else {
-            initValue(newFile)
-        }
-    }
-    const ask2Switch = async (newFile) => {
-        Modal.confirm({
-            simple: true,
-            title: "保存提示",
-            content: "即将切换到其他文档，当前编辑的文档还未保存？请选择",
-            okText: "是，立马保存",
-            cancelText: "否，我要放弃",
-            onOk: async () => {
-                if (activeFile.length > 0) {
-                    await writeFile(activeFile, value)
-                }
-                if (newFile != null && newFile.length > 0) {
-                    initValue(newFile)
-                }
-
-            },
-            onCancel: async () => {
-                if (newFile != null && newFile.length > 0) {
-                    initValue(newFile)
-                }
-            }
-        })
     }
 
     const saveFile = async () => {
@@ -87,37 +56,12 @@ const Markdown = React.forwardRef((props, ref) => {
         }
     }
 
-    const ask2Exit = async () => {
-        const { appWindow } = await require('@tauri-apps/api/window')
-        if (changed()) {
-            Modal.confirm({
-                simple: true,
-                title: "保存提示",
-                content: "即将关闭应用，当前编辑的文档还未保存？请选择",
-                okText: "是，立马保存",
-                cancelText: "否，我要放弃",
-                onOk: async () => {
-                    if (activeFile.length > 0) {
-                        await writeFile(activeFile, value)
-                    }
-                    appWindow.close();
-                },
-                onCancel: async () => {
-                    appWindow.close();
-                }
-            })
-        } else {
-            appWindow.close();
-        }
-    }
-
-    const switchMode = async (newMode) => {
+    const switchMode = async () => {
         if (mode === "view" || mode.length < 1) {
             setMode("edit");
             return
         }
         setMode('view')
-
     }
 
     async function doUploadImages(files) {
@@ -143,7 +87,6 @@ const Markdown = React.forwardRef((props, ref) => {
         setValue(data)
         setOldValue(data)
         setActiveFile(file)
-        console.log("initValue", data.length)
         if (mode != null && mode.length > 0) {
             setMode(mode)
         }
@@ -154,7 +97,7 @@ const Markdown = React.forwardRef((props, ref) => {
     }, [])
     React.useImperativeHandle(
         ref,
-        () => ({ initValue, switchNewFile, changed, ask2Exit, saveFile, switchMode })
+        () => ({ initValue, changed, saveFile, switchMode })
     );
 
     if (mode === 'view') {
@@ -164,11 +107,10 @@ const Markdown = React.forwardRef((props, ref) => {
     return <Editor
         value={value}
         plugins={[image(activeFile, sep), ...plugins]}
-        mode="split"
+        mode={props.editMode || 'tab'}
         uploadImages={doUploadImages}
         onChange={(val) => {
             setValue(val)
-            console.log("Change",val.length, val)
         }} />
 })
 

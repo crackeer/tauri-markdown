@@ -2,7 +2,7 @@ import React from 'react';
 import '@/styles/globals.css'
 import "@arco-design/web-react/dist/css/arco.css";
 import { Layout, Menu, Divider } from '@arco-design/web-react';
-import { IconHome, IconCalendar } from '@arco-design/web-react/icon';
+import { IconHome, IconCalendar,IconCommon } from '@arco-design/web-react/icon';
 import cache from '@/util/cache';
 const Sider = Layout.Sider;
 const MenuItem = Menu.Item;
@@ -87,7 +87,7 @@ class ClassApp extends React.Component {
                         </a>
                         <a href="/markdown/">
                             <MenuItem key='markdown'>
-                                Markdown
+                            <IconCommon />Markdown
                             </MenuItem>
                         </a>
                     </Menu>
@@ -102,6 +102,4 @@ class ClassApp extends React.Component {
         </>
     }
 }
-
-
 export default ClassApp
