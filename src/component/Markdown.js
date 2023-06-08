@@ -22,7 +22,7 @@ import { Modal, Message } from '@arco-design/web-react';
 import { md5 } from '@/util/common';
 
 const plugins = [
-    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), copyCode(),
+    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter()
 ]
 
 const getUploadConfig = async (activeFile) => {
@@ -56,7 +56,7 @@ const Markdown = React.forwardRef((props, ref) => {
         }
     }
 
-    const switchMode = async (newMode) => {
+    const switchMode = async () => {
         if (mode === "view" || mode.length < 1) {
             setMode("edit");
             return
@@ -107,11 +107,10 @@ const Markdown = React.forwardRef((props, ref) => {
     return <Editor
         value={value}
         plugins={[image(activeFile, sep), ...plugins]}
-        mode="split"
+        mode={props.editMode || 'tab'}
         uploadImages={doUploadImages}
         onChange={(val) => {
             setValue(val)
-            console.log("Change",val.length, val)
         }} />
 })
 

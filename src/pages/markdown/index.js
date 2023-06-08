@@ -1,15 +1,25 @@
 import React from 'react';
 import { Button, Modal, Affix, List } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
-import { listen } from '@tauri-apps/api/event'
 import Markdown from '@/component/Markdown';
-import { setWindowTitle } from '../../util/invoke'
 import utilFs from '../../util/fs'
 import cache from '@/util/cache';
 import { IconEdit, IconDelete, IconDown, IconLoading } from '@arco-design/web-react/icon';
+import { Card, Avatar, Link, Typography, Space, Row } from '@arco-design/web-react';
 
+const ModalHeaderWidth = 48
+const ModalFooterHeight = 65
+function getModalHeight() {
+    let height = document.documentElement.clientHeight
+    let modalHeight = height - 40
+    let modalContent = modalHeight - ModalHeaderWidth - ModalFooterHeight - 40
+    return {
+        modalHeight: modalHeight,
+        modalContentHeight: modalContent
+    }
+}
 class App extends React.Component {
-    directory = null;
+    markdown = null;
     constructor(props) {
         super(props);
         this.state = {
@@ -17,7 +27,10 @@ class App extends React.Component {
             visible: false,
             activeFile: '',
             mode: 'view',
-            files: []
+            files: [],
+            modalHeight: 0,
+            modalContentHeight: 0,
+            switchText:'编辑'
         }
         this.directory = React.createRef()
         this.markdown = React.createRef()
@@ -30,7 +43,10 @@ class App extends React.Component {
         })
     }
     htmlTitle = () => {
-        return <h3>Markdown</h3>
+        return <h3><Space>
+            Markdown
+            <Button onClick={this.openDirectory} type="primary">打开markdown</Button>
+        </Space></h3>
     }
     openDirectory = async () => {
         let selected = await open({
@@ -50,11 +66,19 @@ class App extends React.Component {
         })
         cache.setMarkdownFiles(selected)
     }
-    toEdit = async (item, index) => {
+    toView = async (item, index) => {
         this.setState({
             activeFile: item,
-            mode: 'edit',
-            visible: true
+            mode: 'view',
+            visible: true,
+            switchText : '编辑',
+            ...getModalHeight(),
+        })
+    }
+    switchEdit = async () => {
+        this.markdown.switchMode('edit')
+        this.setState({
+            switchText : this.state.switchText == '编辑' ? '查看' : '编辑'
         })
     }
     toDelete = async (item, index) => {
@@ -69,10 +93,7 @@ class App extends React.Component {
     render() {
         return (
             <div class="app">
-                <div>
-                    <Button onClick={this.openDirectory} type="primary">打开markdown</Button>
-                </div>
-                <List dataSource={this.state.files} render={render.bind(null, this.toEdit, this.toDelete)} />
+                <List dataSource={this.state.files} render={render.bind(null, this.toView, this.toDelete)} />
 
                 <Modal
                     title={
@@ -82,24 +103,16 @@ class App extends React.Component {
                     visible={this.state.visible}
                     alignCenter={false}
                     escToExit={false}
-                    style={{ width: '80%', top: '20px', height: '90%' }}
+                    unmountOnExit={true}
+                    style={{ width: '75%', top: '20px', height: this.state.modalHeight + 'px', overflow: 'scroll' }}
                     footer={
-                        <>
-                            <Button
-                                onClick={() => {
-                                }}
-                            >
-                                Return
-                            </Button>
-                            <Button
-                                onClick={() => {
+                        <div style={{ textAlign: 'center' }}>
+                            <Space size={'large'}>
+                                <Button onClick={this.switchEdit} type='primary'>{this.state.switchText}</Button>
+                                <Button onClick={() => {this.setState({visible: false}) }} >关闭 </Button>
+                            </Space>
 
-                                }}
-                                type='primary'
-                            >
-                                Submit
-                            </Button>
-                        </>
+                        </div>
                     }
                     onCancel={() => {
                         this.setState({
@@ -107,24 +120,25 @@ class App extends React.Component {
                         })
                     }}
                 >
-                    <Markdown file={this.state.activeFile} mode={this.state.mode}/>
+                    <div style={{ height: this.state.modalContentHeight + 'px', overflow: 'scroll' }}>
+                        <Markdown file={this.state.activeFile} mode={this.state.mode} ref={(ele) => {
+                            this.markdown = ele
+                        }} />
+                    </div>
                 </Modal>
             </div>
         )
     }
 }
 
-const render = (editFn, deleteFn, item, index) => (
+const render = (viewFn, deleteFn, item, index) => (
     <List.Item key={index} actions={[
-        <span className='list-demo-actions-icon' onClick={editFn.bind(null, item, index)}>
-            <IconEdit />
-        </span>,
         <span className='list-demo-actions-icon' onClick={deleteFn.bind(null, item, index)}>
             <IconDelete />
         </span>
     ]}>
         <List.Item.Meta
-            title={item}
+            title={<Link href="#" onClick={viewFn.bind(null, item, index)}>{item}</Link>}
         />
     </List.Item>
 );

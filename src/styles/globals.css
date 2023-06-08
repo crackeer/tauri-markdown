@@ -2,6 +2,20 @@
   position:absolute;
 }
 
+
+.bytemd-editor .CodeMirror .CodeMirror-lines {
+  max-width: 999999px !important;
+}
+
+.bytemd-preview .markdown-body {
+  max-width: 999999px !important;
+}
+
+
 .bytemd {
-  height: '500px'!important;
+  height: auto!important;
+}
+
+.arco-modal-content {
+  padding: 10px!important;
 }
