@@ -1,11 +1,6 @@
 import React from 'react';
 import { Button, Layout, Affix, List } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
-import { listen } from '@tauri-apps/api/event'
-import Markdown from '@/component/Markdown';
-import TreeDirectory from '@/component/TreeDirectory';
-import { setWindowTitle } from '../../util/invoke'
-import utilFs from '../../util/fs'
 import cache from '@/util/cache';
 import { IconEdit, IconDelete, IconDown, IconLoading } from '@arco-design/web-react/icon';
 
