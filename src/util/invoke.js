@@ -83,9 +83,18 @@ var renameFile = async (filePath, newFilePath) => {
     return result
 }
 
-
+var fileExists = async (filePath) => {
+    let result = await invoke('file_exists', {
+        filePath: filePath,
+    })
+    return result
+}
 
 
 export {
-    writeFile, readFile, readDir, simpleReadDir, setWindowTitle, uploadFile, createFile, createDir, deleteFile, deleteFolder, renameFile
+    writeFile, readFile, readDir, simpleReadDir, setWindowTitle, uploadFile, createFile, createDir, deleteFile, deleteFolder, renameFile, fileExists
+}
+
+export default {
+    writeFile, readFile, readDir, simpleReadDir, setWindowTitle, uploadFile, createFile, createDir, deleteFile, deleteFolder, renameFile, fileExists
 }

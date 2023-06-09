@@ -2,6 +2,7 @@ import { writeTextFile, BaseDirectory, readTextFile, readDir, createDir, removeF
 
 const MenuCollapsed = "MenuCollapsed";
 const MarkdownFiles = "MarkdownFiles";
+const JSONFiles = "JSONFiles";
 
 var get = async (key) => {
     try {
@@ -38,7 +39,17 @@ var getMarkdownFiles = async () => {
         return []
     }
     return JSON.parse(value)
+}
 
+var setJSONFiles = async (list) => {
+    return set(JSONFiles, JSON.stringify(list))
+}
+var getJSONFiles = async () => {
+    let value = await get(JSONFiles)
+    if(value.length < 1) {
+        return []
+    }
+    return JSON.parse(value)
 }
 
 
@@ -47,5 +58,7 @@ export default {
     getMenuCollapsed,
     setMenuCollapsed, 
     getMarkdownFiles,
-    setMarkdownFiles
+    setMarkdownFiles,
+    getJSONFiles,
+    setJSONFiles,
 }

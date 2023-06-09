@@ -1,11 +1,12 @@
 import React from 'react';
-import { Button, Modal, Affix, List } from '@arco-design/web-react';
+import { Button, Modal, List, Link, Space, Message } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
-import Markdown from '@/component/Markdown';
+import JSONView from '@/component/JSONView';
+import JSONEditor from '@/component/JSONEditor';
+
 import cache from '@/util/cache';
 import invoke from '@/util/invoke'
 import { IconEdit, IconDelete, IconDown, IconLoading } from '@arco-design/web-react/icon';
-import { Card, Avatar, Link, Typography, Space, Row } from '@arco-design/web-react';
 
 const ModalHeaderWidth = 48
 const ModalFooterHeight = 65
@@ -19,24 +20,22 @@ function getModalHeight() {
     }
 }
 class App extends React.Component {
-    markdown = null;
+    editor = null;
     constructor(props) {
         super(props);
         this.state = {
-            rootDir: '',
             visible: false,
             activeFile: '',
             mode: 'view',
             files: [],
+            json : null,
             modalHeight: 0,
             modalContentHeight: 0,
-            switchText:'编辑'
+            switchText: '编辑'
         }
-        this.directory = React.createRef()
-        this.markdown = React.createRef()
     }
     async componentDidMount() {
-        let list = await cache.getMarkdownFiles()
+        let list = await cache.getJSONFiles()
 
         this.setState({
             files: list
@@ -44,8 +43,8 @@ class App extends React.Component {
     }
     htmlTitle = () => {
         return <h3><Space>
-            Markdown
-            <Button onClick={this.openDirectory} type="primary">打开markdown</Button>
+            Json
+            <Button onClick={this.openDirectory} type="primary">打开Json</Button>
         </Space></h3>
     }
     openDirectory = async () => {
@@ -53,22 +52,22 @@ class App extends React.Component {
             directory: false,
             multiple: true,
             filters: [{
-                name: 'File',
-                extensions: ['md']
+                name: 'Json',
+                extensions: ['json']
             }],
         });
         if (selected == null || selected.length < 1) {
             return
         }
-        for(var i in selected) {
+        for (var i in selected) {
             let result = await invoke.fileExists(selected[i])
-            if(!result) {
+            if (!result) {
                 await invoke.createFile(selected[i])
             }
         }
-       
+
         for (var i in this.state.files) {
-            if(selected.indexOf(this.state.files[i]) < 0) {
+            if (selected.indexOf(this.state.files[i]) < 0) {
                 selected.push(this.state.files[i])
             }
         }
@@ -76,21 +75,37 @@ class App extends React.Component {
         await this.setState({
             files: selected
         })
-        cache.setMarkdownFiles(selected)
+        cache.setJSONFiles(selected)
     }
     toView = async (item, index) => {
-        await this.setState({
-            activeFile: item,
-            mode: 'view',
-            visible: true,
-            ...getModalHeight(),
-        })
+        let value = await invoke.readFile(item)
+        try {
+            let json = JSON.parse(value)
+            await this.setState({
+                activeFile: item,
+                json: json,
+                mode: 'view',
+                visible: true,
+                ...getModalHeight(),
+            })
+        } catch(e) {
+            Message.error(e.message)
+        }
+        
     }
     switchEdit = async () => {
-        this.markdown.switchMode('edit')
-        this.setState({
-            mode : this.state.mode === 'view' ? 'edit' : 'view'
+        await this.setState({
+            mode: this.state.mode === 'view' ? 'edit' : 'view'
         })
+    }
+    changeJSON = async (value) => {
+        try {
+            let json = JSON.parse(value)
+            await this.setState({json: json})
+            console.log(json)
+        } catch(e) {
+
+        }
     }
     toDelete = async (item, index) => {
         let data = this.state.files.filter((temp, i) => {
@@ -99,13 +114,15 @@ class App extends React.Component {
         this.setState({
             files: data
         })
-        cache.setMarkdownFiles(data)
+        cache.setJSONFiles(data)
     }
     handleKeyUp = async (event) => {
         if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
-            if(this.state.mode === "edit") {
-                this.markdown.saveFile();
+            if (this.state.mode === "edit") {
+                let content = JSON.stringify(this.state.json)
+                await invoke.writeFile(this.state.activeFile, content)
+                Message.info('保存成功')
             }
         }
     }
@@ -128,8 +145,8 @@ class App extends React.Component {
                     footer={
                         <div style={{ textAlign: 'center' }}>
                             <Space size={'large'}>
-                                <Button onClick={this.switchEdit} type='primary'>{this.state.mode== 'view' ? '编辑' : '查看'}</Button>
-                                <Button onClick={() => {this.setState({visible: false}) }} >关闭 </Button>
+                                <Button onClick={this.switchEdit} type='primary'>{this.state.mode == 'view' ? '编辑' : '查看'}</Button>
+                                <Button onClick={() => { this.setState({ visible: false }) }} >关闭 </Button>
                             </Space>
 
                         </div>
@@ -139,13 +156,16 @@ class App extends React.Component {
                             visible: false,
                         })
                     }}
-                    onKeyUp={this.handleKeyUp}  tabIndex="-1"
+                    onKeyUp={this.handleKeyUp} tabIndex="-1"
                 >
-                    <div style={{ height: this.state.modalContentHeight + 'px', overflow: 'scroll', padding : this.state.mode == 'view' ? '0px 60px' : '0px'}}>
-                        <Markdown file={this.state.activeFile} mode={this.state.mode} ref={(ele) => {
-                            this.markdown = ele
-                        }} />
-                    </div>
+                    {
+                        this.state.mode == 'view' ? <div style={{ height: this.state.modalContentHeight + 'px', overflow: 'scroll' }}>
+                            <JSONView json={this.state.json} />
+                        </div> : <JSONEditor height={this.state.modalContentHeight} ref={(ele) => {
+                            this.editor = ele
+                        }} json={this.state.json} onChangeText={this.changeJSON}/>
+                    }
+
                 </Modal>
             </div>
         )

@@ -2,6 +2,7 @@ use serde::Serialize;
 use std::{
     fs::{self, read_dir, File},
     io::{ Read, Write},
+    path::Path
 };
 use tauri::InvokeError;
 
@@ -71,7 +72,6 @@ pub fn simple_read_dir(dir: String, ext: String) -> Vec<FileItem> {
 
 #[tauri::command]
 pub fn write_media_file(dir: String, name : String, content: Vec<u8>) -> String {
-    println!("{} - {}", dir,name);
     let tmp_path = std::path::Path::new(&dir);
     if let Err(err) = std::fs::create_dir_all(&tmp_path) {
         return err.to_string();
@@ -128,5 +128,10 @@ pub fn rename_file(file_path: String, new_file_path : String) -> String {
     } else {
         String::from("ok")
     }
+}
+
+#[tauri::command]
+pub fn file_exists(file_path: String) -> bool {
+    Path::new(&file_path).exists()
 }
 

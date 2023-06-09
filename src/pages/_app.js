@@ -2,23 +2,22 @@ import React from 'react';
 import '@/styles/globals.css'
 import "@arco-design/web-react/dist/css/arco.css";
 import { Layout, Menu, Divider } from '@arco-design/web-react';
-import { IconHome, IconCalendar,IconCommon } from '@arco-design/web-react/icon';
+import { IconHome,IconCommon } from '@arco-design/web-react/icon';
+import Image  from 'next/image'
 import cache from '@/util/cache';
 const Sider = Layout.Sider;
 const MenuItem = Menu.Item;
+import markdownSVG from '@/svg/markdown.svg'
+import jsonSVG from '@/svg/json.svg'
 
-const menuKeyMapping = {
-    'markdown': '/markdown/detail',
-    'main': '/inspire/ok'
-}
-
-function getLocationByMenuKey(key) {
-    if (menuKeyMapping[key] === undefined) {
-        return null
+const imageIconProps = {
+    width : 14,
+    height: 14,
+    style : {
+        marginRight: '16px',
+        verticalAlign: 'middle',
     }
-    return menuKeyMapping[key]
 }
-
 function getMarginLeft(value) {
     if (value) {
         return "48px"
@@ -87,7 +86,13 @@ class ClassApp extends React.Component {
                         </a>
                         <a href="/markdown/">
                             <MenuItem key='markdown'>
-                            <IconCommon />Markdown
+                            <Image priority src={markdownSVG} {...imageIconProps} />
+                            Markdown
+                            </MenuItem>
+                        </a>
+                        <a href="/json/">
+                            <MenuItem key='json'>
+                            <Image priority src={jsonSVG} {...imageIconProps} />Json
                             </MenuItem>
                         </a>
                     </Menu>

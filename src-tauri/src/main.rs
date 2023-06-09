@@ -8,7 +8,7 @@ use std::vec;
 
 use command::file::{
     create_dir, create_file, delete_file, delete_folder, get_file_content, rename_file,
-    simple_read_dir, write_file, write_media_file,
+    simple_read_dir, write_file, write_media_file, file_exists
 };
 use tauri::{CustomMenuItem, Menu, MenuItem, Submenu};
 use tauri::{Window, WindowMenuEvent};
@@ -38,7 +38,8 @@ fn main() {
             create_file,
             delete_file,
             delete_folder,
-            rename_file
+            rename_file,
+            file_exists
         ])
         .menu(menu)
         .on_menu_event(window_menu_event)
