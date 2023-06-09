@@ -1,3 +1,6 @@
+import markdownSVG from '@/svg/markdown.svg'
+import jsonSVG from '@/svg/json.svg'
+
 import React from 'react';
 import '@/styles/globals.css'
 import "@arco-design/web-react/dist/css/arco.css";
@@ -7,8 +10,6 @@ import Image  from 'next/image'
 import cache from '@/util/cache';
 const Sider = Layout.Sider;
 const MenuItem = Menu.Item;
-import markdownSVG from '@/svg/markdown.svg'
-import jsonSVG from '@/svg/json.svg'
 
 const imageIconProps = {
     width : 14,
