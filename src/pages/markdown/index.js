@@ -141,10 +141,11 @@ class App extends React.Component {
                     }}
                     onKeyUp={this.handleKeyUp}  tabIndex="-1"
                 >
-                    <div style={{ height: this.state.modalContentHeight + 'px', overflow: 'scroll', padding : this.state.mode == 'view' ? '0px 60px' : '0px'}}>
+                    <div style={{ height: this.state.modalContentHeight + 'px', overflow: 'scroll', padding : this.state.mode == 'view' ? '0px 60px' : '0px', position:'relative'}}>
                         <Markdown file={this.state.activeFile} mode={this.state.mode} ref={(ele) => {
                             this.markdown = ele
                         }} />
+                        <div class="clearfloat"></div>
                     </div>
                 </Modal>
             </div>

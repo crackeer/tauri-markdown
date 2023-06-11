@@ -27,7 +27,11 @@ class App extends React.Component {
                         <Link href='https://course.rs/about-book.html' target='_blank'>Rust语言圣经</Link>
                         <Link href='https://google.github.io/comprehensive-rust/' target='_blank'>Google的一本教学书</Link>
                     </Space>
-
+                </Card>
+                <Card title='Q&A'>
+                    <Space size={'large'}>
+                        <Link href='https://github.com/tauri-apps/tauri/discussions/3059' target='_blank'>DevTools in release mode</Link>
+                    </Space>
                 </Card>
             </div>
         )
