@@ -162,16 +162,11 @@ class App extends React.Component {
                     {
                         this.state.mode == 'view' ? <div style={{ height: this.state.modalContentHeight + 'px', overflow: 'scroll' }}>
                             <JSONView json={this.state.json} />
-                        </div> : null
+                        </div> :  <JSONEditor height={this.state.modalContentHeight} ref={(ele) => {
+                            this.editor = ele
+                        }} json={this.state.json} onChangeText={this.changeJSON}/>
                     }
-                     <JSONEditor height={this.state.modalContentHeight} ref={(ele) => {
-                            this.editor = ele
-                        }} json={this.state.json} onChangeText={this.changeJSON}/>
-
                 </Modal>
-                <JSONEditor height={this.state.modalContentHeight} ref={(ele) => {
-                            this.editor = ele
-                        }} json={this.state.json} onChangeText={this.changeJSON}/>
             </div>
         )
     }

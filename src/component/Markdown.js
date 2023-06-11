@@ -19,7 +19,6 @@ import { Editor, Viewer } from '@bytemd/react'
 import { uploadFile, readFile, writeFile } from '../util/invoke'
 import dayjs from 'dayjs'
 import { Modal, Message } from '@arco-design/web-react';
-import { md5 } from '@/util/common';
 
 const plugins = [
     gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter()
