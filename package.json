@@ -64,5 +64,6 @@
     "@bytemd/react": "^1.17.2",
     "@tauri-apps/cli": "^1.2.3",
     "cross-env": "^7.0.3"
-  }
+  },
+  "sideEffects":["*.css"]
 }

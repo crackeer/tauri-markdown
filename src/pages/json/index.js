@@ -1,4 +1,5 @@
 import React from 'react';
+import 'jsoneditor/dist/jsoneditor.css';
 import { Button, Modal, List, Link, Space, Message } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
 import JSONView from '@/component/JSONView';
@@ -161,12 +162,16 @@ class App extends React.Component {
                     {
                         this.state.mode == 'view' ? <div style={{ height: this.state.modalContentHeight + 'px', overflow: 'scroll' }}>
                             <JSONView json={this.state.json} />
-                        </div> : <JSONEditor height={this.state.modalContentHeight} ref={(ele) => {
+                        </div> : null
+                    }
+                     <JSONEditor height={this.state.modalContentHeight} ref={(ele) => {
                             this.editor = ele
                         }} json={this.state.json} onChangeText={this.changeJSON}/>
-                    }
 
                 </Modal>
+                <JSONEditor height={this.state.modalContentHeight} ref={(ele) => {
+                            this.editor = ele
+                        }} json={this.state.json} onChangeText={this.changeJSON}/>
             </div>
         )
     }
