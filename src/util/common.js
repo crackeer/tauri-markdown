@@ -36,12 +36,25 @@ var md5 = (str) => {
   
 }
 
+
+function getQuery(key, value) {
+    let url = new URLSearchParams(window.location.search)
+    return url.get(key) || value
+}
+
 var calculateCRC32 = (data) => {  
   const crc32 = new Uint32Array(data);  
   const crc32Value = crc32.reduce((acc, curr) => acc ^ curr, 0);  
   return crc32Value;  
 }  
 
+var getViewHeight = () => {
+    return document.documentElement.clientHeight - 106
+}
+
+export default {
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight
+}
 export {
-    sortFileList, getRelativePath, md5, calculateCRC32
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight
 }

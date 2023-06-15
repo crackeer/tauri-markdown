@@ -179,7 +179,7 @@ const render = (viewFn, deleteFn, item, index) => (
         </span>
     ]}>
         <List.Item.Meta
-            title={<Link href="#" onClick={viewFn.bind(null, item, index)}>{item}</Link>}
+            title={<Link href={'/file?file=' + item}>{item}</Link>}
         />
     </List.Item>
 );

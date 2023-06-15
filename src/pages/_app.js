@@ -26,6 +26,7 @@ function getMarginLeft(value) {
     return "200px"
 }
 class ClassApp extends React.Component {
+    ref = null
     constructor(props) {
         super(props); // 用于父子组件传值
         this.state = {
@@ -42,9 +43,17 @@ class ClassApp extends React.Component {
         });
     }
     refUpdate = async (ref) => {
+        this.ref = ref;
         if (ref != null && ref.htmlTitle != undefined) {
             this.setState({
                 headTitle: ref.htmlTitle(),
+            })
+        }
+    }
+    updateTitle = () => {
+        if (this.ref != null && this.ref.htmlTitle != undefined) {
+            this.setState({
+                headTitle: this.ref.htmlTitle(),
             })
         }
     }
@@ -91,17 +100,11 @@ class ClassApp extends React.Component {
                             Markdown
                             </MenuItem>
                         </a>
-                        <a href="/json/">
-                            <MenuItem key='json'>
-                            <Image priority src={jsonSVG} {...imageIconProps} />Json
-                            </MenuItem>
-                        </a>
                     </Menu>
                 </Sider>
                 <Layout style={{ marginLeft: this.state.marginLeft, padding:'10px' }}>
                     {this.state.headTitle}
-                    <Divider style={{ margin: '0 0 20px' }}></Divider>
-                    <Component {...pageProps} ref={this.refUpdate} />
+                    <Component {...pageProps} ref={this.refUpdate} updateTitle={this.updateTitle}/>
                 </Layout>
             </Layout>
 
