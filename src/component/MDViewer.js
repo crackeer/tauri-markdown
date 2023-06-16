@@ -9,14 +9,14 @@ import mermaid from '@bytemd/plugin-mermaid';
 import gfm from '@bytemd/plugin-gfm'
 import math from '@bytemd/plugin-math'
 import image from '@/plugins/image'
-
+import rehypeExternalLinks from 'rehype-external-links'
 import mediumZoom from '@bytemd/plugin-medium-zoom'
 import gemoji from '@bytemd/plugin-gemoji'
 import frontmatter from '@bytemd/plugin-frontmatter'
 import {  Viewer } from '@bytemd/react'
 
 const plugins = [
-    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), mediumZoom()
+    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), mediumZoom(), rehypeExternalLinks({target: '_blank', rel: ['nofollow']})
 ]
 
 const MDViewer = (props) => {
