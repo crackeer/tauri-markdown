@@ -1,24 +1,12 @@
-import markdownSVG from '@/svg/markdown.svg'
-import jsonSVG from '@/svg/json.svg'
-
 import React from 'react';
 import '@/styles/globals.css'
 import "@arco-design/web-react/dist/css/arco.css";
-import { Layout, Menu, Divider } from '@arco-design/web-react';
-import { IconHome,IconCommon } from '@arco-design/web-react/icon';
-import Image  from 'next/image'
+import { Layout, Menu, Affix } from '@arco-design/web-react';
+import { IconHome, IconCodeSquare } from '@arco-design/web-react/icon';
 import cache from '@/util/cache';
 const Sider = Layout.Sider;
 const MenuItem = Menu.Item;
 
-const imageIconProps = {
-    width : 14,
-    height: 14,
-    style : {
-        marginRight: '16px',
-        verticalAlign: 'middle',
-    }
-}
 function getMarginLeft(value) {
     if (value) {
         return "48px"
@@ -65,7 +53,7 @@ class ClassApp extends React.Component {
         cache.setMenuCollapsed(value ? 1 : 0)
     }
     clickMenuItem = async (key) => {
-        
+
     }
     render() {
         const { Component, pageProps } = this.props
@@ -91,20 +79,22 @@ class ClassApp extends React.Component {
                     <Menu onClickMenuItem={this.clickMenuItem} theme='dark'>
                         <a href="/">
                             <MenuItem key='main'>
-                                <IconHome/>主页
+                                <IconHome />主页
                             </MenuItem>
                         </a>
                         <a href="/markdown/">
                             <MenuItem key='markdown'>
-                            <Image priority src={markdownSVG} {...imageIconProps} />
-                            Markdown
+                                <IconCodeSquare />
+                                Markdown
                             </MenuItem>
                         </a>
                     </Menu>
                 </Sider>
-                <Layout style={{ marginLeft: this.state.marginLeft, padding:'10px' }}>
-                    {this.state.headTitle}
-                    <Component {...pageProps} ref={this.refUpdate} updateTitle={this.updateTitle}/>
+                <Layout style={{ marginLeft: this.state.marginLeft, padding: '10px' }}>
+                    <Affix offsetTop={0} affixStyle={{background:'white'}}>
+                        {this.state.headTitle}
+                    </Affix>
+                    <Component {...pageProps} ref={this.refUpdate} updateTitle={this.updateTitle} />
                 </Layout>
             </Layout>
 

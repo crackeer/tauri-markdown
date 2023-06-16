@@ -8,7 +8,7 @@ import highlight from '@bytemd/plugin-highlight';
 import mermaid from '@bytemd/plugin-mermaid';
 import gfm from '@bytemd/plugin-gfm'
 import math from '@bytemd/plugin-math'
-import image from '../plugins/image'
+import image from '@/plugins/image'
 
 import mediumZoom from '@bytemd/plugin-medium-zoom'
 import gemoji from '@bytemd/plugin-gemoji'
@@ -20,26 +20,21 @@ const plugins = [
 ]
 
 const MDViewer = (props) => {
-    const [value, setValue] = React.useState("");
     const [file, setFile] = React.useState("");
     const [sep, setSep] = React.useState("/");
 
-    const changed = () => {
-        return oldValue != value
-    }
 
-    const initValue = async (file, value) => {
+    const initValue = async (file) => {
         const { sep } = await import('@tauri-apps/api/path')
         setSep(sep)
-        setValue(value)
         setFile(file)
     }
 
     useEffect(() => {
-        initValue(props.file, props.value)
+        initValue(props.file)
     }, [])
 
-    return <Viewer value={value} plugins={[image(file, sep), ...plugins]} />   
+    return <Viewer value={props.value} plugins={[image(file, sep), ...plugins]} />   
 }
 
 export default MDViewer;

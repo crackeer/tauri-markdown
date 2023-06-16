@@ -18,7 +18,6 @@ import frontmatter from '@bytemd/plugin-frontmatter'
 import { Editor, Viewer } from '@bytemd/react'
 import { uploadFile, readFile, writeFile } from '../util/invoke'
 import dayjs from 'dayjs'
-import { Modal, Message } from '@arco-design/web-react';
 
 const plugins = [
     gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), mediumZoom()
@@ -38,7 +37,6 @@ const getUploadConfig = async (activeFile) => {
 }
 
 const MDEditor = React.forwardRef((props, ref) => {
-    const [value, setValue] = React.useState("");
     const [file, setFile] = React.useState("");
     const [sep, setSep] = React.useState("/");
 
@@ -50,7 +48,7 @@ const MDEditor = React.forwardRef((props, ref) => {
         for (var i in view) {
             list.push(view[i])
         }
-        let uploadConfig = await getUploadConfig(activeFile)
+        let uploadConfig = await getUploadConfig(file)
         await uploadFile(uploadConfig.uploadDir, uploadConfig.fileName, list)
         return new Promise((resolve, _) => {
             resolve([{
@@ -66,7 +64,7 @@ const MDEditor = React.forwardRef((props, ref) => {
     }
 
     useEffect(() => {
-        initValue(props.file, props.value)
+        initValue(props.file)
     }, [])
     React.useImperativeHandle(
         ref,

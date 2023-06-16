@@ -119,7 +119,7 @@ class App extends React.Component {
     render() {
         if (this.state.file_type == 'markdown') {
             if (this.state.mode === "view") {
-                return <div style={{ height: this.state.viewHeight, overflow: 'scroll', padding: '0 30px' }}>
+                return <div style={{  padding: '0 30px' }}>
                     <MDViewer value={this.state.value} file={this.state.activeFile} />
                 </div>
             }
@@ -131,7 +131,7 @@ class App extends React.Component {
         }
         if (this.state.file_type == 'json') {
             if (this.state.mode === "view") {
-                return <div style={{ height: this.state.viewHeight, overflow: 'scroll' }}>
+                return <div style={{ overflow: 'scroll' }}>
                     <JSONView json={this.state.value} />
                 </div>
             }
