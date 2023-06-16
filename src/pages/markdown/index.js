@@ -25,8 +25,10 @@ class App extends React.Component {
     }
     htmlTitle = () => {
         return <h3><Space>
-            Markdown
-            <Button onClick={this.openDirectory} type="primary">打开markdown</Button>
+            文件
+            <Button onClick={this.openDirectory} type="primary">添加文件</Button>
+            <Button type='link' href={'/file/create?file_type=json'}>新建JSON</Button>
+            <Button type='link' href={'/file/create?file_type=markdown'}>新建Markdown</Button>
         </Space></h3>
     }
     openDirectory = async () => {

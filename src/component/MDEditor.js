@@ -43,10 +43,6 @@ const MDEditor = React.forwardRef((props, ref) => {
     const [sep, setSep] = React.useState("/");
 
 
-    const getValue = () => {
-        return value
-    }
-
     async function doUploadImages(files) {
         let buffer = await files[0].arrayBuffer()
         let view = new Uint8Array(buffer);
@@ -63,10 +59,9 @@ const MDEditor = React.forwardRef((props, ref) => {
             }])
         })
     }
-    const initValue = async (file, value) => {
+    const initValue = async (file) => {
         const { sep } = await import('@tauri-apps/api/path')
         setSep(sep)
-        setValue(value)
         setFile(file)
     }
 
@@ -75,11 +70,11 @@ const MDEditor = React.forwardRef((props, ref) => {
     }, [])
     React.useImperativeHandle(
         ref,
-        () => ({ initValue, getValue })
+        () => ({ initValue })
     );
 
     return <Editor
-        value={value}
+        value={props.value}
         plugins={[image(file, sep), ...plugins]}
         mode={props.editMode || 'split'}
         uploadImages={doUploadImages}

@@ -1,4 +1,19 @@
-const crypto = require('crypto');  
+const crypto = require('crypto'); 
+const FileTypeMarkdown = "markdown";
+const FileTypeJSON = "json";
+const FileTypeText = "text";
+
+const FileTypeExtensionMapping= {
+    FileTypeMarkdown : 'md',
+    FileTypeJSON : 'json',
+    FileTypeText : 'txt'
+}
+var getFileExtByType = (fileType) => {
+    if(fileType === FileTypeMarkdown) {
+        return "md"
+    }
+    return FileTypeExtensionMapping[fileType] || 'txt'
+}
 
 var sortFileList = (fileList) => {
     fileList = fileList.sort((a, b) => {
@@ -49,12 +64,12 @@ var calculateCRC32 = (data) => {
 }  
 
 var getViewHeight = () => {
-    return document.documentElement.clientHeight - 106
+    return document.documentElement.clientHeight - 86
 }
 
 export default {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText
 }
 export {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText
 }
