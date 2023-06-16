@@ -18,9 +18,10 @@ import frontmatter from '@bytemd/plugin-frontmatter'
 import { Editor, Viewer } from '@bytemd/react'
 import { uploadFile, readFile, writeFile } from '../util/invoke'
 import dayjs from 'dayjs'
+import rehypeExternalLinks from '@/plugins/external-link'
 
 const plugins = [
-    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), mediumZoom()
+    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), mediumZoom(), rehypeExternalLinks()
 ]
 
 const getUploadConfig = async (activeFile) => {
