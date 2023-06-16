@@ -85,7 +85,7 @@ class ClassApp extends React.Component {
                         <a href="/markdown/">
                             <MenuItem key='markdown'>
                                 <IconCodeSquare />
-                                Markdown
+                                文件
                             </MenuItem>
                         </a>
                     </Menu>
