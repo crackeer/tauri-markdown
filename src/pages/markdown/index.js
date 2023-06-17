@@ -31,7 +31,7 @@ class App extends React.Component {
             <Button onClick={this.addFile} type="primary">添加</Button>
             <Button onClick={this.openFile} type="primary">打开</Button>
             <Button type='link' href={'/file/create?file_type=json'}>新建JSON</Button>
-            <Button type='link' href={'/file/create?file_type=markdown'}>新建Markdown</Button>
+            <Button type='link' href={'/file/create?file_type=md'}>新建Markdown</Button>
         </Space></h3>
     }
     openFile = async () => {
@@ -87,7 +87,6 @@ class App extends React.Component {
             } else if (fileType == common.FileTypeMarkdown) {
                 list[i]['color'] = '#00d0b6'
             }
-            list[i].date = list[i].date.substr(5)
         }
         for (var i in list) {
             if (dateGroup[list[i].date] == undefined) {
@@ -102,6 +101,12 @@ class App extends React.Component {
                 "files": dateGroup[key]
             })
         })
+        retData = retData.sort((a, b) =>{
+            if (a.date < b.date) {
+                return 1
+            }
+            return -1
+        })
         return retData
     }
     toDelete = async (item) => {
@@ -114,16 +119,12 @@ class App extends React.Component {
     render() {
         let groupList = this.groupList(this.state.files)
         return (
-            <div class="app">
-                <Timeline style={{ margin: '0 auto', width: '80%' }} reverse={false} labelPosition={'relative'}>
-                    {groupList.map(item => {
-                        return <TimelineItem label={
-                            <strong style={{ fontSize: '17px' }}>{item.date}</strong>
-                        }>
-                            <Files data={item.files} deleteFn={this.toDelete} />
-                        </TimelineItem>
-                    })}
-                </Timeline>
+            <div class="app" style={{margin:'10px auto', width:'88%'}}>
+                {groupList.map(item => {
+                    return <div style={{marginBottom:'10px'}}>
+                        <Files data={item.files} deleteFn={this.toDelete} title={item.date}/>
+                        </div>
+                })}
             </div>
         )
     }
@@ -137,14 +138,14 @@ const Files = (props) => {
             }}>
                 <IconDelete />
             </span>
-        ]}>
+        ]} >
             <List.Item.Meta
                 avatar={<Avatar shape='square' style={{ backgroundColor: item.color }}>{item.file_type}</Avatar>}
                 title={<Link href={'/file?file=' + item.file}>{item.file}</Link>}
                 description={item.time}
             />
         </List.Item>
-    }} />
+    }} header={<strong>{props.title}</strong>}/>
 }
 
 export default App

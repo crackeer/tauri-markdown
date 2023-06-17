@@ -83,7 +83,7 @@ class App extends React.Component {
     }
 
     render() {
-        if (this.state.file_type == 'markdown') {
+        if (this.state.file_type == 'md') {
             return <div style={{ height: this.state.viewHeight, overflow: 'scroll', position: 'relative' }} onKeyUp={this.handleKeyUp} tabIndex="-1">
                 <MDEditor value={this.state.value} file={''} ref={(ele) => {
                     this.editor = ele

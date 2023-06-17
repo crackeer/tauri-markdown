@@ -64,7 +64,6 @@ var deleteOpenFiles = async (addFiles) => {
     files = files.filter(item => {
         return addFiles.indexOf(item.file) < 0
     })
-    console.log(files)
     await set(OpenFiles, JSON.stringify(files))
     return files
 }
