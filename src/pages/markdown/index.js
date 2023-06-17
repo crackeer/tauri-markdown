@@ -1,12 +1,14 @@
 import React from 'react';
-import { Button, Modal, Affix, List } from '@arco-design/web-react';
+import { Button, Table, Timeline, List } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
 import Markdown from '@/component/Markdown';
 import cache from '@/util/cache';
 import invoke from '@/util/invoke'
+import common from '@/util/common'
 import { IconEdit, IconDelete, IconDown, IconLoading } from '@arco-design/web-react/icon';
 import { Card, Avatar, Link, Typography, Space, Row } from '@arco-design/web-react';
-
+import dayjs from 'dayjs';
+const TimelineItem = Timeline.Item;
 class App extends React.Component {
     constructor(props) {
         super(props);
@@ -17,7 +19,7 @@ class App extends React.Component {
         this.markdown = React.createRef()
     }
     async componentDidMount() {
-        let list = await cache.getMarkdownFiles()
+        let list = await cache.getOpenFiles()
 
         this.setState({
             files: list
@@ -26,12 +28,31 @@ class App extends React.Component {
     htmlTitle = () => {
         return <h3><Space>
             文件
-            <Button onClick={this.openDirectory} type="primary">添加文件</Button>
+            <Button onClick={this.addFile} type="primary">添加</Button>
+            <Button onClick={this.openFile} type="primary">打开</Button>
             <Button type='link' href={'/file/create?file_type=json'}>新建JSON</Button>
             <Button type='link' href={'/file/create?file_type=markdown'}>新建Markdown</Button>
         </Space></h3>
     }
-    openDirectory = async () => {
+    openFile = async () => {
+        let selected = await open({
+            directory: false,
+            multiple: false,
+            filters: [{
+                name: 'File',
+                extensions: ['md', 'json']
+            }],
+        });
+        if (selected == null || selected.length < 1) {
+            return
+        }
+        let result = await invoke.fileExists(selected)
+        if (!result) {
+            await invoke.createFile(selected)
+        }
+        window.location.href = "/file?file=" + selected
+    }
+    addFile = async () => {
         let selected = await open({
             directory: false,
             multiple: true,
@@ -43,53 +64,87 @@ class App extends React.Component {
         if (selected == null || selected.length < 1) {
             return
         }
-        for(var i in selected) {
+        for (var i in selected) {
             let result = await invoke.fileExists(selected[i])
-            if(!result) {
+            if (!result) {
                 await invoke.createFile(selected[i])
             }
         }
-       
-        for (var i in this.state.files) {
-            if(selected.indexOf(this.state.files[i]) < 0) {
-                selected.push(this.state.files[i])
-            }
-        }
+
+        let list = await cache.addOpenFiles(selected)
 
         await this.setState({
-            files: selected
+            files: list
         })
-        cache.setMarkdownFiles(selected)
     }
-
-    toDelete = async (item, index) => {
-        let data = this.state.files.filter((temp, i) => {
-            return i != index
+    groupList = (list) => {
+        let dateGroup = {}
+        for (var i in list) {
+            let fileType = common.detectFileType(list[i]['file'])
+            list[i]['file_type'] = fileType.toUpperCase()
+            if (fileType == common.FileTypeJSON) {
+                list[i]['color'] = '#3370ff'
+            } else if (fileType == common.FileTypeMarkdown) {
+                list[i]['color'] = '#00d0b6'
+            }
+            list[i].date = list[i].date.substr(5)
+        }
+        for (var i in list) {
+            if (dateGroup[list[i].date] == undefined) {
+                dateGroup[list[i].date] = []
+            }
+            dateGroup[list[i].date].push(list[i])
+        }
+        let retData = []
+        Object.keys(dateGroup).forEach(key => {
+            retData.push({
+                "date": key,
+                "files": dateGroup[key]
+            })
         })
+        return retData
+    }
+    toDelete = async (item) => {
+        let list = await cache.deleteOpenFiles([item.file])
         this.setState({
-            files: data
+            files: list
         })
-        cache.setMarkdownFiles(data)
     }
 
     render() {
+        let groupList = this.groupList(this.state.files)
         return (
             <div class="app">
-                <List dataSource={this.state.files} render={render.bind(null, this.toDelete)} />
+                <Timeline style={{ margin: '0 auto', width: '80%' }} reverse={false} labelPosition={'relative'}>
+                    {groupList.map(item => {
+                        return <TimelineItem label={
+                            <strong style={{ fontSize: '17px' }}>{item.date}</strong>
+                        }>
+                            <Files data={item.files} deleteFn={this.toDelete} />
+                        </TimelineItem>
+                    })}
+                </Timeline>
             </div>
         )
     }
 }
 
-const render = ( deleteFn, item, index) => (
-    <List.Item key={index} actions={[
-        <span className='list-demo-actions-icon' onClick={deleteFn.bind(null, item, index)}>
-            <IconDelete />
-        </span>
-    ]}>
-        <List.Item.Meta
-            title={<Link href={'/file?file=' + item} >{item}</Link>}
-        />
-    </List.Item>
-);
+const Files = (props) => {
+    return <List dataSource={props.data} size={'small'} render={(item, index) => {
+        return <List.Item key={index} actions={[
+            <span className='list-demo-actions-icon' onClick={() => {
+                props.deleteFn(item);
+            }}>
+                <IconDelete />
+            </span>
+        ]}>
+            <List.Item.Meta
+                avatar={<Avatar shape='square' style={{ backgroundColor: item.color }}>{item.file_type}</Avatar>}
+                title={<Link href={'/file?file=' + item.file}>{item.file}</Link>}
+                description={item.time}
+            />
+        </List.Item>
+    }} />
+}
+
 export default App

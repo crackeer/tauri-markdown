@@ -27,11 +27,11 @@ class App extends React.Component {
     async componentDidMount() {
         let file = common.getQuery("file")
         let mode = common.getQuery("mode", "view");
-        console.log(this.detectFileType(file))
         await this.setState({
             activeFile: file,
         })
-        this.getJSON(file, mode)
+        cache.addOpenFiles([file])
+        this.loadFile(file, mode)
     }
     htmlTitle = () => {
         return <h3><Space>
@@ -39,20 +39,12 @@ class App extends React.Component {
             <Button onClick={this.switchEdit} type='primary'>{this.state.mode == 'view' ? '编辑' : '查看'}</Button>
         </Space></h3>
     }
-    detectFileType = (file) => {
-        if (lodash.endsWith(file, '.md')) {
-            return "markdown";
-        }
-        if (lodash.endsWith(file, '.json')) {
-            return "json";
-        }
-    }
-    getJSON = async (item, mode) => {
+    loadFile = async (item, mode) => {
         let content = await invoke.readFile(item)
-        let fileType = this.detectFileType(item)
-        if (fileType == 'json') {
+        let fileType = common.detectFileType(item)
+        if (fileType == common.FileTypeJSON) {
             await this.loadJSON(content, mode)
-        } else if (fileType == 'markdown') {
+        } else if (fileType == common.FileTypeMarkdown) {
             await this.loadMarkdown(content, mode)
         }
         this.props.updateTitle()

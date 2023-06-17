@@ -1,8 +1,9 @@
 import { writeTextFile, BaseDirectory, readTextFile, readDir, createDir, removeFile } from '@tauri-apps/api/fs';
+import dayjs from 'dayjs';
+import { add } from 'lodash';
 
 const MenuCollapsed = "MenuCollapsed";
-const MarkdownFiles = "MarkdownFiles";
-const JSONFiles = "JSONFiles";
+const OpenFiles = "OpenFiles";
 
 var get = async (key) => {
     try {
@@ -30,35 +31,47 @@ var setMenuCollapsed = async (value) => {
     return set(MenuCollapsed, value +'')
 }
 
-var setMarkdownFiles = async (list) => {
-    return set(MarkdownFiles, JSON.stringify(list))
-}
-var getMarkdownFiles = async () => {
-    let value = await get(MarkdownFiles)
+
+var getOpenFiles = async () => {
+    let value = await get(OpenFiles)
     if(value.length < 1) {
         return []
     }
     return JSON.parse(value)
 }
 
-var setJSONFiles = async (list) => {
-    return set(JSONFiles, JSON.stringify(list))
-}
-var getJSONFiles = async () => {
-    let value = await get(JSONFiles)
-    if(value.length < 1) {
-        return []
+var addOpenFiles = async (addFiles) => {
+    let files = await getOpenFiles()
+    
+    files = files.filter(item => {
+        return addFiles.indexOf(item.file) < 0
+    })
+    let date = dayjs().format('YYYY-MM-DD')
+    let time = dayjs().format('HH:mm:ss')
+    for (var i in addFiles) {
+        files.unshift({
+            'file' : addFiles[i],
+            'date' : date,
+            'time' : time,
+        })
     }
-    return JSON.parse(value)
+    await set(OpenFiles, JSON.stringify(files))
+    return files
 }
 
-
-
+var deleteOpenFiles = async (addFiles) => {
+    let files = await getOpenFiles()
+    files = files.filter(item => {
+        return addFiles.indexOf(item.file) < 0
+    })
+    console.log(files)
+    await set(OpenFiles, JSON.stringify(files))
+    return files
+}
 export default {
     getMenuCollapsed,
     setMenuCollapsed, 
-    getMarkdownFiles,
-    setMarkdownFiles,
-    getJSONFiles,
-    setJSONFiles,
+    getOpenFiles,
+    addOpenFiles,
+    deleteOpenFiles,
 }

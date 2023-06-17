@@ -1,5 +1,7 @@
 const crypto = require('crypto'); 
-const FileTypeMarkdown = "markdown";
+const lodash = require('lodash');
+
+const FileTypeMarkdown = "md";
 const FileTypeJSON = "json";
 const FileTypeText = "text";
 
@@ -66,10 +68,18 @@ var calculateCRC32 = (data) => {
 var getViewHeight = () => {
     return document.documentElement.clientHeight - 86
 }
+var detectFileType = (file) => {
+    if (lodash.endsWith(file, '.md')) {
+        return FileTypeMarkdown;
+    }
+    if (lodash.endsWith(file, '.json')) {
+        return FileTypeJSON;
+    }
+}
 
 export default {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType
 }
 export {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType
 }

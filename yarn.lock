@@ -1651,9 +1651,9 @@
   "resolved" "https://registry.npmmirror.com/@next/env/-/env-13.2.4.tgz"
   "version" "13.2.4"
 
-"@next/swc-darwin-x64@13.2.4":
-  "integrity" "sha512-a6LBuoYGcFOPGd4o8TPo7wmv5FnMr+Prz+vYHopEDuhDoMSHOnC+v+Ab4D7F0NMZkvQjEJQdJS3rqgFhlZmKlw=="
-  "resolved" "https://registry.npmmirror.com/@next/swc-darwin-x64/-/swc-darwin-x64-13.2.4.tgz"
+"@next/swc-win32-x64-msvc@13.2.4":
+  "integrity" "sha512-0MffFmyv7tBLlji01qc0IaPP/LVExzvj7/R5x1Jph1bTAIj4Vu81yFQWHHQAP6r4ff9Ukj1mBK6MDNVXm7Tcvw=="
+  "resolved" "https://registry.npmmirror.com/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-13.2.4.tgz"
   "version" "13.2.4"
 
 "@nodelib/fs.scandir@2.1.5":
@@ -1955,9 +1955,9 @@
   "resolved" "https://registry.npmjs.org/@tauri-apps/api/-/api-1.2.0.tgz"
   "version" "1.2.0"
 
-"@tauri-apps/cli-darwin-x64@1.2.3":
-  "integrity" "sha512-jFZ/y6z8z6v4yliIbXKBXA7BJgtZVMsITmEXSuD6s5+eCOpDhQxbRkr6CA+FFfr+/r96rWSDSgDenDQuSvPAKw=="
-  "resolved" "https://registry.npmjs.org/@tauri-apps/cli-darwin-x64/-/cli-darwin-x64-1.2.3.tgz"
+"@tauri-apps/cli-win32-x64-msvc@1.2.3":
+  "integrity" "sha512-CsbHQ+XhnV/2csOBBDVfH16cdK00gNyNYUW68isedmqcn8j+s0e9cQ1xXIqi+Hue3awp8g3ImYN5KPepf3UExw=="
+  "resolved" "https://registry.npmjs.org/@tauri-apps/cli-win32-x64-msvc/-/cli-win32-x64-msvc-1.2.3.tgz"
   "version" "1.2.3"
 
 "@tauri-apps/cli@^1.2.3":
@@ -6051,11 +6051,6 @@
   "integrity" "sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw=="
   "resolved" "https://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
   "version" "1.0.0"
-
-"fsevents@^2.3.2", "fsevents@~2.3.2":
-  "integrity" "sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA=="
-  "resolved" "https://registry.npmjs.org/fsevents/-/fsevents-2.3.2.tgz"
-  "version" "2.3.2"
 
 "function-bind@^1.1.1":
   "integrity" "sha512-yIovAzMX49sF8Yl58fSCWJ5svSLuaibPxXQJFLmBObTuCr0Mf1KiPopGM9NiFjiYBCbfaa2Fh6breQ6ANVTI0A=="
@@ -10556,7 +10551,7 @@
 
 "rehype-external-links@^2.1.0":
   "integrity" "sha512-2YMJZVM1hxZnwl9IPkbN5Pjn78kXkAX7lq9VEtlaGA29qIls25vZN+ucNIJdbQUe+9NNFck17BiOhGmsD6oLIg=="
-  "resolved" "https://registry.npmjs.org/rehype-external-links/-/rehype-external-links-2.1.0.tgz"
+  "resolved" "https://registry.npmmirror.com/rehype-external-links/-/rehype-external-links-2.1.0.tgz"
   "version" "2.1.0"
   dependencies:
     "@types/hast" "^2.0.0"
