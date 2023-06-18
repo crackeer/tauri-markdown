@@ -3,6 +3,7 @@ const lodash = require('lodash');
 
 const FileTypeMarkdown = "md";
 const FileTypeJSON = "json";
+const FileTypeGO = "go";
 const FileTypeText = "text";
 
 const FileTypeExtensionMapping= {
@@ -74,6 +75,9 @@ var detectFileType = (file) => {
     }
     if (lodash.endsWith(file, '.json')) {
         return FileTypeJSON;
+    }
+    if (lodash.endsWith(file, '.go')) {
+        return FileTypeGO;
     }
 }
 

@@ -1,139 +1,150 @@
 import React from 'react';
-import 'jsoneditor/dist/jsoneditor.css';
-import { Button, Modal, List, Link, Space, Message } from '@arco-design/web-react';
+import { Button, Table, Timeline, List } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
-import JSONView from '@/component/JSONView';
-import JSONEditor from '@/component/JSONEditor';
-import lodash from 'lodash'
+import Markdown from '@/component/Markdown';
 import cache from '@/util/cache';
 import invoke from '@/util/invoke'
 import common from '@/util/common'
 import { IconEdit, IconDelete, IconDown, IconLoading } from '@arco-design/web-react/icon';
-import MDViewer from '@/component/MDViewer';
-import MDEditor from '@/component/MDEditor';
-
-
+import { Card, Avatar, Link, Typography, Space, Row } from '@arco-design/web-react';
+import dayjs from 'dayjs';
+const TimelineItem = Timeline.Item;
 class App extends React.Component {
-    editor = null;
     constructor(props) {
         super(props);
         this.state = {
-            activeFile: '',
-            mode: 'view',
-            value: null,
-            viewHeight: 0,
+            files: [],
         }
+        this.directory = React.createRef()
+        this.markdown = React.createRef()
     }
     async componentDidMount() {
-        let file = common.getQuery("file")
-        let mode = common.getQuery("mode", "view");
-        await this.setState({
-            activeFile: file,
+        let list = await cache.getOpenFiles()
+        this.setState({
+            files: list
         })
-        cache.addOpenFiles([file])
-        this.loadFile(file, mode)
     }
     htmlTitle = () => {
         return <h3><Space>
-            {this.state.activeFile}
-            <Button onClick={this.switchEdit} type='primary'>{this.state.mode == 'view' ? '编辑' : '查看'}</Button>
+            文件
+            <Button onClick={this.addFile} type="primary">添加</Button>
+            <Button onClick={this.openFile} type="primary">打开</Button>
+            <Button type='link' href={'/file/create?file_type=json'}>新建JSON</Button>
+            <Button type='link' href={'/file/create?file_type=md'}>新建Markdown</Button>
         </Space></h3>
     }
-    loadFile = async (item, mode) => {
-        let content = await invoke.readFile(item)
-        let fileType = common.detectFileType(item)
-        if (fileType == common.FileTypeJSON) {
-            await this.loadJSON(content, mode)
-        } else if (fileType == common.FileTypeMarkdown) {
-            await this.loadMarkdown(content, mode)
+    openFile = async () => {
+        let selected = await open({
+            directory: false,
+            multiple: false,
+            filters: [{
+                name: 'File',
+                extensions: ['md', 'json']
+            }],
+        });
+        if (selected == null || selected.length < 1) {
+            return
         }
-        this.props.updateTitle()
-    }
-    loadJSON = async (content, mode) => {
-        try {
-            let value = JSON.parse(content)
-            await this.setState({
-                value: value,
-                file_type: 'json',
-                mode: mode,
-                viewHeight: common.getViewHeight()
-            })
-
-        } catch (e) {
-            Message.error(e.message)
+        let result = await invoke.fileExists(selected)
+        if (!result) {
+            await invoke.createFile(selected)
         }
+        window.location.href = "/file?file=" + selected
     }
-    loadMarkdown = async (content, mode) => {
-        await this.setState({
-            value: content,
-            file_type: 'markdown',
-            mode: mode,
-            viewHeight: common.getViewHeight()
-        })
-    }
-    switchEdit = async () => {
-        await this.setState({
-            mode: this.state.mode === 'view' ? 'edit' : 'view'
-        })
-        /*
-        setTimeout(() => {
-            this.editor.initValue(this.state.activeFile, this.state.value)
-        }, 4000)*/
-        
-        this.props.updateTitle()
-    }
-    changeJSON = async (value) => {
-        try {
-            let json = JSON.parse(value)
-            await this.setState({ value: json })
-            console.log(json)
-        } catch (e) {
-
+    addFile = async () => {
+        let selected = await open({
+            directory: false,
+            multiple: true,
+            filters: [{
+                name: 'File',
+                extensions: ['md', 'json', 'go']
+            }],
+        });
+        if (selected == null || selected.length < 1) {
+            return
         }
-    }
-    changeText = async (value) => {
-        await this.setState({ value: value })
-    }
-    handleKeyUp = async (event) => {
-        if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
-            event.preventDefault();
-            if (this.state.mode === "edit") {
-                let content = this.state.value
-                if(this.state.file_type == 'json') {
-                    content = JSON.stringify(this.state.value)
-                }
-                await invoke.writeFile(this.state.activeFile, content)
-                Message.info('保存成功')
+        for (var i in selected) {
+            let result = await invoke.fileExists(selected[i])
+            if (!result) {
+                await invoke.createFile(selected[i])
             }
         }
+
+        let list = await cache.addOpenFiles(selected)
+
+        await this.setState({
+            files: list
+        })
+    }
+    groupList = (list) => {
+        let dateGroup = {}
+        for (var i in list) {
+            let fileType = common.detectFileType(list[i]['file'])
+            list[i]['file_type'] = fileType.toUpperCase()
+            if (fileType == common.FileTypeJSON) {
+                list[i]['color'] = '#3370ff'
+            } else if (fileType == common.FileTypeMarkdown) {
+                list[i]['color'] = '#00d0b6'
+            }
+        }
+        for (var i in list) {
+            if (dateGroup[list[i].date] == undefined) {
+                dateGroup[list[i].date] = []
+            }
+            dateGroup[list[i].date].push(list[i])
+        }
+        let retData = []
+        Object.keys(dateGroup).forEach(key => {
+            retData.push({
+                "date": key,
+                "files": dateGroup[key]
+            })
+        })
+        retData = retData.sort((a, b) =>{
+            if (a.date < b.date) {
+                return 1
+            }
+            return -1
+        })
+        return retData
+    }
+    toDelete = async (item) => {
+        let list = await cache.deleteOpenFiles([item.file])
+        this.setState({
+            files: list
+        })
     }
 
     render() {
-        if (this.state.file_type == 'markdown') {
-            if (this.state.mode === "view") {
-                return <div style={{  padding: '0 30px' }}>
-                    <MDViewer value={this.state.value} file={this.state.activeFile} />
-                </div>
-            }
-            return <div style={{ height: this.state.viewHeight, overflow: 'scroll', position:'relative' }} onKeyUp={this.handleKeyUp} tabIndex="-1">
-                <MDEditor value={this.state.value} file={this.state.activeFile} ref={(ele) => {
-                    this.editor = ele
-                }}  onChangeText={this.changeText} />
+        let groupList = this.groupList(this.state.files)
+        return (
+            <div class="app" style={{margin:'10px auto', width:'88%'}}>
+                {groupList.map(item => {
+                    return <div style={{marginBottom:'10px'}}>
+                        <Files data={item.files} deleteFn={this.toDelete} title={item.date}/>
+                        </div>
+                })}
             </div>
-        }
-        if (this.state.file_type == 'json') {
-            if (this.state.mode === "view") {
-                return <div style={{ overflow: 'scroll' }}>
-                    <JSONView json={this.state.value} />
-                </div>
-            }
-            return <div class="app" onKeyUp={this.handleKeyUp} tabIndex="-1">
-                <JSONEditor height={this.state.viewHeight} ref={(ele) => {
-                    this.editor = ele
-                }} json={this.state.value} onChangeText={this.changeJSON} />
-            </div>
-        }
+        )
     }
+}
+
+const Files = (props) => {
+    return <List dataSource={props.data} size={'small'} render={(item, index) => {
+        return <List.Item key={index} actions={[
+            <span className='list-demo-actions-icon' onClick={() => {
+                props.deleteFn(item);
+            }}>
+                <IconDelete />
+            </span>
+        ]} >
+            <List.Item.Meta
+                avatar={<Avatar shape='square' style={{ backgroundColor: item.color }}>{item.file_type}</Avatar>}
+                title={<Link href={'/file/view?file=' + item.file}>{item.file}</Link>}
+                description={item.time}
+            />
+        </List.Item>
+    }} header={<strong>{props.title}</strong>}/>
 }
 
 export default App

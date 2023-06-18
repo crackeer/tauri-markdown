@@ -24,7 +24,7 @@ export default function localImageSrc(currentFile, sep) {
             
             if(ele.tagName == "a") {
                 if(ele.properties.href != undefined) {
-                    return "/file?file=" + absolutePath
+                    return "/file/view?file=" + absolutePath
                 }
             }
             return convertFileSrc(absolutePath)
