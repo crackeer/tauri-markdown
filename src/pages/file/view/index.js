@@ -4,11 +4,9 @@ import { Button, Modal, List, Link, Space, Message } from '@arco-design/web-reac
 import { open } from '@tauri-apps/api/dialog';
 import JSONView from '@/component/JSONView';
 import JSONEditor from '@/component/JSONEditor';
-import lodash from 'lodash'
 import cache from '@/util/cache';
 import invoke from '@/util/invoke'
 import common from '@/util/common'
-import { IconEdit, IconDelete, IconDown, IconLoading } from '@arco-design/web-react/icon';
 import MDViewer from '@/component/MDViewer';
 import MDEditor from '@/component/MDEditor';
 import dynamic from "next/dynamic";

@@ -7,6 +7,12 @@ import cache from '@/util/cache';
 const Sider = Layout.Sider;
 const MenuItem = Menu.Item;
 
+const MenuList = [
+    {'key' : 'main', 'icon' : <IconHome /> , 'href': '/', 'title': '主页'},
+    {'key' : 'file', 'icon' : <IconCodeSquare /> , 'href': '/file', 'title': '文件'},
+    {'key' : 'nuc', 'icon' : <IconCodeSquare /> , 'href': '/nuc', 'title': 'nuc'},
+]
+
 function getMarginLeft(value) {
     if (value) {
         return "48px"
@@ -53,7 +59,13 @@ class ClassApp extends React.Component {
         cache.setMenuCollapsed(value ? 1 : 0)
     }
     clickMenuItem = async (key) => {
-
+        window.location.href = "/" + key
+        for(var i in MenuList) {
+            if(MenuList[i].key === key) {
+                window.location.href = MenuList[i].href
+                return
+            }
+        }
     }
     render() {
         const { Component, pageProps } = this.props
@@ -77,21 +89,15 @@ class ClassApp extends React.Component {
                     }}
                 >
                     <Menu onClickMenuItem={this.clickMenuItem} theme='dark'>
-                        <a href="/">
-                            <MenuItem key='main'>
-                                <IconHome />主页
-                            </MenuItem>
-                        </a>
-                        <a href="/file/">
-                            <MenuItem key='markdown'>
-                                <IconCodeSquare />
-                                文件
-                            </MenuItem>
-                        </a>
+                        {
+                            MenuList.map(item => {
+                                return <MenuItem key={item.key}>{item.icon}{item.title}</MenuItem>
+                            })
+                        }
                     </Menu>
                 </Sider>
                 <Layout style={{ marginLeft: this.state.marginLeft, padding: '10px' }}>
-                    <Affix offsetTop={0} affixStyle={{background:'white'}}>
+                    <Affix offsetTop={0} affixStyle={{ background: 'white' }}>
                         {this.state.headTitle}
                     </Affix>
                     <Component {...pageProps} ref={this.refUpdate} updateTitle={this.updateTitle} />
