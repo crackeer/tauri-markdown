@@ -81,9 +81,17 @@ var detectFileType = (file) => {
     }
 }
 
+function httpBuildQuery(query) {
+    let params = new URLSearchParams("")
+    Object.keys(query).forEach(k => {
+        params.append(k, query[k])
+    })
+    return params.toString()
+}
+
 export default {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery
 }
 export {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery
 }

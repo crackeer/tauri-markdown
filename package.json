@@ -14,6 +14,7 @@
     "@uvdream/bytemd-plugin-code-copy": "^0.1.0",
     "@zeit/next-css": "^1.0.1",
     "antd": "^5.5.2",
+    "axios": "^1.4.0",
     "crypto": "^1.0.1",
     "dayjs": "^1.11.7",
     "editor.md": "^1.5.0",

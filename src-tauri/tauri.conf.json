@@ -20,7 +20,9 @@
                 ]
             },
             "http": {
-                "all": true
+                "all": true,
+                "scope": ["http://10.11.1.3/*"],
+                "request": true
             },
             "protocol": {
                 "all" : true,

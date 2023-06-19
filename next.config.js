@@ -7,6 +7,7 @@ const withTM = require("next-transpile-modules")([
   "monaco-editor"
 ]);
 module.exports = withTM({
+  outputFileTracing : false,
   webpack: config => {
     const rule = config.module.rules
       .find(rule => rule.oneOf)

@@ -10,7 +10,7 @@ const MenuItem = Menu.Item;
 const MenuList = [
     {'key' : 'main', 'icon' : <IconHome /> , 'href': '/', 'title': '主页'},
     {'key' : 'file', 'icon' : <IconCodeSquare /> , 'href': '/file', 'title': '文件'},
-    {'key' : 'nuc', 'icon' : <IconCodeSquare /> , 'href': '/nuc', 'title': 'nuc'},
+    {'key' : 'nuc_tf', 'icon' : <IconCodeSquare /> , 'href': '/nuc/tf', 'title': 'TF卡'},
 ]
 
 function getMarginLeft(value) {
