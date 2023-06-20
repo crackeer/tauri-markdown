@@ -1,5 +1,6 @@
 const crypto = require('crypto'); 
 const lodash = require('lodash');
+const dayjs = require('dayjs');
 
 const FileTypeMarkdown = "md";
 const FileTypeJSON = "json";
@@ -89,9 +90,13 @@ function httpBuildQuery(query) {
     return params.toString()
 }
 
+function convertTs2Time(ts) {
+    return dayjs.unix(ts).format('YYYY-MM-DD HH:mm:ss')
+}
+
 export default {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery, convertTs2Time
 }
 export {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery, convertTs2Time
 }
