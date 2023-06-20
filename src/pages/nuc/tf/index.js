@@ -171,18 +171,17 @@ const Projects = (props) => {
             'title': '错误Code',
             'dataIndex': 'error_code',
             'key': 'error_code',
-        },
-        {
-            'title': '错误消息',
-            'dataIndex': 'error_message',
-            'key': 'error_message',
-        },
+        }
     ]
     if (props.list.length < 1) {
         return null
     }
     return <>
-        <Table data={props.list} columns={columns} pagination={false} />
+        <Table data={props.list} columns={columns} pagination={false} expandedRowRender={(record) =>{
+            return <p>
+                错误消息：{record.error_message}
+            </p>
+        }} expandProps={{rowExpandable: (record) => record.status == 'failure'}} rowKey={'project_id'}/>
     </>
 }
 

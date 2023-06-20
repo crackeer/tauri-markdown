@@ -1,12 +1,23 @@
 import { fetch } from '@tauri-apps/api/http';
 import common from './common'
-import dayjs from 'dayjs'
+import { Body } from "@tauri-apps/api/http"
 const get = async (url, query) => {
     if (query != null) {
         url = url + '?' + common.httpBuildQuery(query)
     }
     let result = await fetch(url, {
         method: 'GET'
+    })
+    return result.data
+}
+
+const post = async (url, data) => {
+    let result = await fetch(url, {
+        method: 'POST',
+        body : Body.json(data),
+        headers : {
+            'Content-Type' : 'application/json'
+        }
     })
     return result.data
 }
@@ -38,7 +49,6 @@ const getTFProjects = async () => {
         }
         list.push(tmp)
     }
-    console.log(list)
     return list
 }
 
@@ -59,7 +69,6 @@ const getTFImportLog = async () => {
             cost : list[i].Finished - list[i].Started
         }
         if (list[i].Projects != undefined) {
-            
             let projects = list[i].Projects
             let allProject = []
             if (projects.Succeeded != undefined) {
@@ -100,11 +109,34 @@ const getTFVRFileList = async () => {
     return result.data.Result
 }
 
+const queryVrapi = async (query) => {
+    let result = await post('http://10.11.1.3/__proxy__/opensvc/util_database_vrapi', query)
+    return result.data
+}
+
+const queryShepherd = async (query) => {
+    let result = await post('http://10.11.1.3/__proxy__/shepherd/util_database_shepherd', query)
+    return result.data
+}
+
+const decodeWorkCode = async (query) => {
+    let result = await get('http://10.11.1.3/__proxy__/opensvc/util_decode_work_code', query)
+    return result.data
+}
+
+const getAccessToken = async (query) => {
+    let result = await post('http://10.11.1.3/auth/access_token', {
+        'app_key' : 'bE0y67lybBZRJr9O',
+        'app_secret' : '8R3AGNFE1FGAGCI48BRDWCF5LY95ZC8J'
+    })
+    return result.data
+}
+
 
 export default {
-    getTFState, getTFProjects, getTFImportLog, getTFVRFileList
+    getTFState, getTFProjects, getTFImportLog, getTFVRFileList, queryVrapi, queryShepherd, decodeWorkCode, getAccessToken
 }
 
 export {
-    getTFState, getTFProjects, getTFImportLog, getTFVRFileList
+    getTFState, getTFProjects, getTFImportLog, getTFVRFileList, queryVrapi, queryShepherd, decodeWorkCode, getAccessToken
 }
