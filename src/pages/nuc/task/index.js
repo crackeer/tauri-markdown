@@ -1,9 +1,9 @@
 import React from 'react';
-import 'jsoneditor/dist/jsoneditor.css';
-import { Button, Input, Grid, Space, Table, Tag, Pagination } from '@arco-design/web-react';
+import { Button, Input, Grid, Space, Table, Tag, Pagination, Modal, Card } from '@arco-design/web-react';
 import api from '@/util/api';
 import common from '@/util/common';
 import { open } from '@tauri-apps/api/shell';
+import lodash from 'lodash'
 const Row = Grid.Row;
 const Col = Grid.Col;
 
@@ -25,34 +25,34 @@ const COLORS = {
 };
 
 const TaskTypeMapping = {
-    'vr_task' : 'VR任务',
-    'project_export_tf' : 'Project回传TF卡',
-    'project_export_cos' : 'Project上传COS',
-    'work_export_tf' : 'VRFile下载到TF卡',
-    'work_export_cos' : 'VRFile上传到COS',
-    'auto_clear_project' : 'Project物理删除'
+    'vr_task': 'VR任务',
+    'project_export_tf': 'Project->TF卡',
+    'project_export_cos': 'Project->COS',
+    'work_export_tf': 'VRFile->TF卡',
+    'work_export_cos': 'VRFile->COS',
+    'auto_clear_project': 'Project删除'
 }
 
 const parseInputObject = (input) => {
     try {
         let object = JSON.parse(input)
-        if(object['work_id'] != undefined) {
+        if (object['work_id'] != undefined) {
             return {
-                value : object['work_id'],
-                type : 'work'
+                value: object['work_id'],
+                type: 'work'
             }
         }
 
-        if(object['project_id'] != undefined) {
+        if (object['project_id'] != undefined) {
             return {
-                value : object['project_id'],
-                type : 'project'
+                value: object['project_id'],
+                type: 'project'
             }
         }
-    } catch(e) {
+    } catch (e) {
         return {
-            value : '',
-            type : 'unknown'
+            value: '',
+            type: 'unknown'
         }
     }
 }
@@ -101,6 +101,15 @@ class App extends React.Component {
             'title': '耗时(s)',
             'dataIndex': 'cost',
             'key': 'cost',
+        },
+        {
+            'title': '操作',
+            'key': 'opt',
+            'render': (col, record, index) => (
+                <Space>
+                    <Button onClick={this.getDetail.bind(this, record)} size="small" type="text">详情</Button>
+                </Space>
+            )
         }
     ]
     constructor(props) {
@@ -112,6 +121,9 @@ class App extends React.Component {
             current_page: 1,
             total_page: 0,
             workList: {},
+            currentSubTask : null,
+            processList : [],
+            visible : false,
         }
     }
     async componentDidMount() {
@@ -142,20 +154,20 @@ class App extends React.Component {
             page_size: PageSize,
         })
         data.list = await this.formatSubTaskList(data.list)
-       
+
         await this.setState(data)
     }
     queryWorks = async (workIDs) => {
         let data = await api.queryVrapi({
             table: 'work',
-            query : {
-                'id' : workIDs
+            query: {
+                'id': workIDs
             },
             page: 1,
             page_size: 1000,
         })
         let retData = {}
-        for(var i in data.list) {
+        for (var i in data.list) {
             retData[data.list[i].id] = data.list[i]
         }
         return retData
@@ -163,14 +175,14 @@ class App extends React.Component {
     queryProjects = async (projectIDs) => {
         let data = await api.queryVrapi({
             table: 'project',
-            query : {
-                'project_id' : projectIDs
+            query: {
+                'project_id': projectIDs
             },
             page: 1,
             page_size: 1000,
         })
         let retData = {}
-        for(var i in data.list) {
+        for (var i in data.list) {
             retData[data.list[i].project_id] = data.list[i]
         }
         return retData
@@ -179,19 +191,19 @@ class App extends React.Component {
     formatSubTaskList = async (list) => {
         let workIDs = []
         let projectIDs = []
-        for(var i in list) {
-            list[i]['index'] = (this.state.current_page - 1 ) * PageSize + parseInt(i) + 1
+        for (var i in list) {
+            list[i]['index'] = (this.state.current_page - 1) * PageSize + parseInt(i) + 1
             let object = parseInputObject(list[i].input)
             list[i].object_value = object.value
             list[i].object_type = object.type
-            if(object.type == 'work') {
+            if (object.type == 'work') {
                 workIDs.push(object.value)
             }
-            if(object.type == 'project') {
+            if (object.type == 'project') {
                 projectIDs.push(object.value)
             }
 
-            if(TaskTypeMapping[list[i].type] != undefined) {
+            if (TaskTypeMapping[list[i].type] != undefined) {
                 list[i].task_name = TaskTypeMapping[list[i].type]
             } else {
                 list[i].task_name = list[i].type
@@ -202,15 +214,32 @@ class App extends React.Component {
         }
         let works = await this.queryWorks(workIDs)
         let projects = await this.queryProjects(projectIDs)
-        for(var i in list) {
-            if(list[i].object_type == 'project' && projects[list[i].object_value] != undefined) {
+        for (var i in list) {
+            if (list[i].object_type == 'project' && projects[list[i].object_value] != undefined) {
                 list[i]['object_text'] = projects[list[i].object_value].name
             }
-            if(list[i].object_type == 'work' && works[list[i].object_value] != undefined) {
+            if (list[i].object_type == 'work' && works[list[i].object_value] != undefined) {
                 list[i]['object_text'] = works[list[i].object_value].name
             }
         }
         return list
+    }
+    getDetail = async (record) => {
+        let data = await api.queryShepherd({
+            table: 'task_process',
+            order_by: 'id asc',
+            query : {
+                sub_task_id : record.id,
+            },
+            page: 1,
+            page_size: PageSize,
+        })
+        console.log(data.list)
+        await this.setState({
+            currentSubTask : lodash.clone(record),
+            processList : data.list,
+            visible : true
+        })
     }
     htmlTitle = () => {
         return <h3><Space>
@@ -220,21 +249,31 @@ class App extends React.Component {
 
     render() {
         return <>
-            <Table data={this.state.list} columns={this.columns} pagination={false}/>
+            <Table data={this.state.list} columns={this.columns} pagination={false} rowKey={'id'} />
             <div style={{ textAlign: 'center', margin: '10px auto' }}>
                 <Pagination size={'large'} total={this.state.total} showTotal hideOnSinglePage current={this.state.current_page} pageSize={PageSize} onChange={this.changePage} />
             </div>
-
+            <Modal visible={this.state.visible} style={{width:'70%'}} onCancel={() => this.setState({visible:false})}>
+                <p>任务输入:</p>
+                {
+                    this.state.currentSubTask != null ?  <Input.TextArea value={this.state.currentSubTask.input + ''} /> : null
+                }
+               
+                {this.state.processList.map(item => {
+                    return <Card title={'算子：' + item.process + "【状态：" +item.state + '】'} style={{marginTop:'15px'}}>
+                        <p>Input</p>
+                        <Input.TextArea value={item.input} rows={5}/>
+                        <p>Output</p>
+                        <Input.TextArea value={item.output} rows={5}/>
+                        <p>Callback</p>
+                        <Input.TextArea value={item.callback} rows={5}/>
+                    </Card>
+                })}
+            </Modal>
         </>
     }
 }
 
-const TaskStatus = (props) => {
-    if (TaskStatusMapping[props.state] != undefined) {
-        return <Tag color={COLORS[props.state]}>{TaskStatusMapping[props.state]}</Tag>
-    }
-    return <Tag>未知</Tag>
-}
 
 const ProcessInfo = (props) => {
     if (props.data == undefined) {

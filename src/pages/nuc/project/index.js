@@ -84,19 +84,20 @@ class App extends React.Component {
             page: 1,
             page_size: PageSize,
         })
+        console.log(result)
         let workData = {}
-        for (var i in result.list) {
+        for (var j in result.list) {
             let tmp = {}
             try {
-                tmp = JSON.parse(result.list[i].extension)
+                tmp = JSON.parse(result.list[j].extension)
             } catch {
 
             }
-            let workCode = await api.decodeWorkCode({ work_id: result.list[i].work_id })
-            tmp['cube_size'] = result.list[i].cube_size
+            let workCode = await api.decodeWorkCode({ work_id: result.list[j].work_id })
+            tmp['cube_size'] = result.list[j].cube_size
             tmp['work_code'] = workCode.work_code
-            tmp['observer_count'] = result.list[i].observer_num
-            workData[result.list[i].work_id] = tmp
+            tmp['observer_count'] = result.list[j].observer_num
+            workData[result.list[j].work_id] = tmp
         }
         await this.setState(data)
         await this.setState({
