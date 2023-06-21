@@ -5,21 +5,32 @@ const get = async (url, query) => {
     if (query != null) {
         url = url + '?' + common.httpBuildQuery(query)
     }
-    let result = await fetch(url, {
-        method: 'GET'
-    })
-    return result.data
+    try {
+        let result = await fetch(url, {
+            method: 'GET'
+        })
+        return result.data    
+    } catch(e) {
+        console.log(e.message)
+        return null
+    }
 }
 
 const post = async (url, data) => {
-    let result = await fetch(url, {
-        method: 'POST',
-        body : Body.json(data),
-        headers : {
-            'Content-Type' : 'application/json'
-        }
-    })
-    return result.data
+    try {
+        let result = await fetch(url, {
+            method: 'POST',
+            body : Body.json(data),
+            headers : {
+                'Content-Type' : 'application/json'
+            }
+        })
+        return result.data
+    } catch(e) {
+        console.log(e.message)
+        return null
+    }
+   
 }
 
 const getTFState = async () => {
@@ -36,7 +47,6 @@ const getTFProjects = async () => {
     let pids = result.data.Result
     for (var i in pids) {
         let project = await get('http://10.11.1.3/__proxy__/calcnode/api_tf_projects_cat?project_id=' + pids[i])
-        console.log(project.data.Result)
         let tmp = {
             project_id: project.data.Result.ProjectID,
             title: project.data.Result.Data.title,
@@ -106,16 +116,33 @@ const getTFImportLog = async () => {
 
 const getTFVRFileList = async () => {
     let result = await get('http://10.11.1.3/__proxy__/calcnode/api_tf_vrfile_ls')
+    if(result == null) {
+        return []
+    }
     return result.data.Result
 }
 
 const queryVrapi = async (query) => {
     let result = await post('http://10.11.1.3/__proxy__/opensvc/util_database_vrapi', query)
+    if(result == null) {
+        return {
+            list : [],
+            total_page : 0,
+            total : 0,
+        }
+    }
     return result.data
 }
 
 const queryShepherd = async (query) => {
     let result = await post('http://10.11.1.3/__proxy__/shepherd/util_database_shepherd', query)
+    if(result == null) {
+        return {
+            list : [],
+            total_page : 0,
+            total : 0,
+        }
+    }
     return result.data
 }
 

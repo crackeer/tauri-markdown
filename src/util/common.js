@@ -94,9 +94,19 @@ function convertTs2Time(ts) {
     return dayjs.unix(ts).format('YYYY-MM-DD HH:mm:ss')
 }
 
+function convertDBTime(dbTime) {
+    return dayjs(dbTime).format('YYYY-MM-DD HH:mm:ss')
+}
+
+function convertDBTime2Unix(dbTime) {
+    return dayjs(dbTime).unix()
+}
+
+
+
 export default {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery, convertTs2Time
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery, convertTs2Time, convertDBTime, convertDBTime2Unix
 }
 export {
-    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery, convertTs2Time
+    sortFileList, getRelativePath, md5, calculateCRC32, getQuery, getViewHeight, getFileExtByType, FileTypeMarkdown, FileTypeJSON, FileTypeText, detectFileType, httpBuildQuery, convertTs2Time, convertDBTime, convertDBTime2Unix
 }
