@@ -6,7 +6,7 @@ import MDView from '@/component/MDView';
 import MDEdit from '@/component/MDEdit';
 import TreeDirectory from '@/component/TreeDirectory';
 import { setWindowTitle } from '../util/invoke'
-import utilFs from '../util/fs'
+import utilFs from '../util/cache'
 import { uploadFile, readFile, writeFile } from '@/util/invoke'
 import { IconEdit } from '@arco-design/web-react/icon';
 const Sider = Layout.Sider;
@@ -164,7 +164,8 @@ class App extends React.Component {
                     <Sider
                         resizeDirections={['right']}
                         style={{
-                            minWidth: '10%',
+                            minWidth: '15%',
+                            width:'20%',
                             maxWidth: '40%',
                             height: '100vh',
                             overflow: 'scroll',
@@ -172,8 +173,11 @@ class App extends React.Component {
                             paddingLeft: '10px'
                         }}
                         size="small"
+                       onChange={(value) => {
+                          console.log(value)
+                       }}
                     >
-                        <TreeDirectory rootDir={this.state.rootDir} clickFile={this.clickFileX} activeFile={this.state.file} />
+                        <TreeDirectory rootDir={this.state.rootDir} clickFile={this.clickFileX} file={this.state.file} />
                     </Sider>
                     <Content>
                         <Affix offsetTop={1} affixStyle={{ top: 0 }}>

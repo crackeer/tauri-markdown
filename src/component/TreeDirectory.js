@@ -5,6 +5,7 @@ import { sortFileList } from '@/util/common';
 import { IconDown } from '@arco-design/web-react/icon';
 import { Dropdown, Menu, Grid } from '@arco-design/web-react';
 import { showEdit, hideEdit } from '../plugins/edit'
+import cache from '@/util/cache';
 const getSubDir = async (dir) => {
     let fileList = await simpleReadDir(dir, ".md")
     fileList = sortFileList(fileList)
@@ -37,9 +38,11 @@ const TreeDirectory = React.forwardRef((props, ref) => {
 
     var initData = async (dir) => {
         let children = await getSubDir(dir)
+        let folder = await cache.getOpenFolder(dir)
+        setExpandKeys(folder)
         setTreeData(children)
     }
-    const loadMore = async (treeNode) => {
+    const reloadDir = async (treeNode) => {
         treeNode.props.dataRef.children = await getSubDir(treeNode.key)
         setTreeData([...treeData]);
     };
@@ -50,22 +53,23 @@ const TreeDirectory = React.forwardRef((props, ref) => {
         initData(props.rootDir)
     }, [])
 
+    const onExpandFolder = (value, info) => {
+        setExpandKeys(value)
+        cache.setOpenFolder(props.rootDir, value)
+    }
+
     return <Tree icons={{
         switcherIcon: <IconDown />,
     }} defaultSelectedKeys={selectKeys}
-        selectedKeys={selectKeys}
-        loadMore={loadMore}
+        selectedKeys={[props.file]}
         treeData={treeData}
         onSelect={(value, info) => {
             if (info.node.props.isLeaf) {
                 props.clickFile(info.node.props.dataRef.key)
-                setSelectKeys([info.node.props.dataRef.key])
             }
         }}
         expandedKeys={expandKeys}
-        onExpand={(value, info) => {
-            setExpandKeys(value)
-        }}
+        onExpand={onExpandFolder}
         size='small'
         actionOnClick={['expand', 'select']}
         renderTitle={(node) => {

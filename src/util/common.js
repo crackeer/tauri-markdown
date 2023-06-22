@@ -45,3 +45,7 @@ var calculateCRC32 = (data) => {
 export {
     sortFileList, getRelativePath, md5, calculateCRC32
 }
+
+export default {
+    sortFileList, getRelativePath, md5, calculateCRC32
+}
