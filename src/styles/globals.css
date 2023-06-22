@@ -16,3 +16,10 @@ img {
   right: 0;
   padding: 5px 10px;
 }
+
+.arco-modal-content {
+  padding: 0!important;
+}
+.bytemd {
+  height: calc(80vh - 28px)!important;
+}

@@ -58,8 +58,8 @@ const MDEdit = (props) => {
     }
 
     return <Editor
-        value={value}
-        plugins={[image(file, sep), ...plugins]}
+        value={props.value}
+        plugins={[image(props.file, props.sep), ...plugins]}
         mode="auto"
         uploadImages={doUploadImages}
         onChange={props.onChange} />
