@@ -10,15 +10,6 @@ img {
   height: 100vh;
 }
 
-#app .content {
-  margin: 5px auto;
-}
-
-
-#app .content .bytemd {
-  height: 98vh;
-}
-
 .copy-btn {
   position: absolute;
   top:0;

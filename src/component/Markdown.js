@@ -22,7 +22,7 @@ import { Modal, Message } from '@arco-design/web-react';
 import { md5 } from '@/util/common';
 
 const plugins = [
-    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), copyCode(), mediumZoom(), externalLink()
+    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), mediumZoom(), externalLink()
 ]
 
 const getUploadConfig = async (activeFile) => {
@@ -158,7 +158,9 @@ const Markdown = React.forwardRef((props, ref) => {
     );
 
     if (mode === 'view') {
-        return <Viewer value={value} plugins={[image(activeFile, sep), ...plugins]} />
+        return <div style={{ padding: '10px 7.5% 50px' }}>
+            <Viewer value={value} plugins={[image(activeFile, sep), ...plugins]} />
+        </div>;
     }
 
     return <Editor
@@ -168,7 +170,7 @@ const Markdown = React.forwardRef((props, ref) => {
         uploadImages={doUploadImages}
         onChange={(val) => {
             setValue(val)
-            console.log("Change",val.length, val)
+            console.log("Change", val.length, val)
         }} />
 })
 

@@ -1,34 +1,54 @@
 import React from 'react';
-import { Button, Layout, Affix } from '@arco-design/web-react';
+import { Button, Layout, Affix, Tabs } from '@arco-design/web-react';
 import { open } from '@tauri-apps/api/dialog';
 import { listen } from '@tauri-apps/api/event'
 import Markdown from '@/component/Markdown';
+import MDView from '@/component/MDView';
 import TreeDirectory from '@/component/TreeDirectory';
 import { setWindowTitle } from '../util/invoke'
 import utilFs from '../util/fs'
+import { uploadFile, readFile, writeFile } from '@/util/invoke'
 
 const Sider = Layout.Sider;
 const Content = Layout.Content;
-
+const TabPane = Tabs.TabPane;
 class App extends React.Component {
     directory = null;
     constructor(props) {
         super(props);
         this.state = {
             rootDir: '',
-            activeFile: '',
+            file: '',
+            openFiles: [],
             mode: 'view',
+            value: '',
+            sep: '/'
         }
         this.directory = React.createRef()
         this.markdown = React.createRef()
     }
     async componentDidMount() {
+        this.initData()
+    }
+    async initData() {
         let object = await utilFs.getLoadConfig()
-        this.initSelectFile(object)
-        this.listen()
+       
+        if (object == undefined || object.rootDir == undefined || object.rootDir.length < 1) {
+            return
+        }
+        const { sep } = await import('@tauri-apps/api/path')
+        object['sep'] = sep
+        await this.setState(object)
+        setTimeout(() => this.loadFileContent(),0)
+        await listen('open_folder', (event) => {
+            this.openDirectory()
+        })
+        await listen('select_file', (event) => {
+           this.clickFileX(event.payload.file)
+        })
     }
     openDirectory = async () => {
-        const {homeDir} = await import('@tauri-apps/api/path')
+        const { homeDir } = await import('@tauri-apps/api/path')
         const homeDirPath = await homeDir();
         let selected = await open({
             directory: true,
@@ -43,18 +63,49 @@ class App extends React.Component {
         })
         this.directory.current.initData(selected)
     }
-    clickFileX = async (file) => {
-        this.markdown.current.switchNewFile(file)
+    closeFile = async (key) => {
         await this.setState({
-            activeFile: file,
+            openFiles: this.state.openFiles.filter(file => {
+                return file !== key
+            })
         })
-        setWindowTitle(file)
-
+        if (key == this.state.file && this.state.openFiles.length > 0) {
+            await this.setState({
+                file: this.state.openFiles[0]
+            })
+        }
+        this.loadFileContent()
+    };
+    loadFileContent = async () => {
+        if (this.state.file.length < 1) {
+            return
+        }
+        let data = await readFile(this.state.file)
+        await this.setState({
+            value: data
+        })
+        this.decorateWindow()
+    }
+    decorateWindow = () => {
+        setWindowTitle(this.state.file)
         utilFs.setLoadConfig({
             rootDir: this.state.rootDir,
-            activeFile: file,
+            file: this.state.file,
             mode: this.state.mode,
+            openFiles: this.state.openFiles,
         })
+    }
+    clickFileX = async (file) => {
+        if(file == this.state.file) return
+        await this.setState({
+            file: file,
+        })
+        if (this.state.openFiles.indexOf(file) < 0) {
+            this.setState({
+                openFiles: [...this.state.openFiles, file]
+            })
+        }
+        setTimeout(this.loadFileContent, 0)
     }
     handleKeyUp = async (event) => {
         if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
@@ -65,34 +116,14 @@ class App extends React.Component {
             event.preventDefault();
             this.markdown.current.switchMode()
             this.setState({
-                mode : this.state.mode == 'edit' ? 'view' : 'edit',
+                mode: this.state.mode == 'edit' ? 'view' : 'edit',
             })
             utilFs.setLoadConfig({
                 rootDir: this.state.rootDir,
-                activeFile: this.state.activeFile,
+                file: this.state.activeFile,
                 mode: this.state.mode == 'edit' ? 'view' : 'edit',
             })
         }
-    }
-   
-    initSelectFile = async (object) => {
-        if (object == undefined || object.rootDir == undefined || object.rootDir.length < 1) {
-            return
-        }
-        await this.setState(object)
-        if(object.activeFile.length > 0) {
-            setWindowTitle(object.activeFile)
-        }
-    }
-    listen = async () => {
-        await listen('open_folder', (event) => {
-            this.openDirectory()
-        })
-        const {appWindow} = await require('@tauri-apps/api/window')
-        appWindow.onCloseRequested(async (event) => {
-            event.preventDefault()
-            this.markdown.current.ask2Exit()
-        });
     }
 
     render() {
@@ -102,7 +133,7 @@ class App extends React.Component {
             </div>
         }
         return (
-            <div id="app" onKeyUp={this.handleKeyUp}  tabIndex="-1">
+            <div id="app" onKeyUp={this.handleKeyUp} tabIndex="-1">
                 <Layout className='layout-body'>
                     <Sider
                         resizeDirections={['right']}
@@ -116,15 +147,31 @@ class App extends React.Component {
                         }}
                         size="small"
                     >
-                        <TreeDirectory rootDir={this.state.rootDir} clickFile={this.clickFileX} ref={this.directory} activeFile={this.state.activeFile}/>
+                        <TreeDirectory rootDir={this.state.rootDir} clickFile={this.clickFileX} ref={this.directory} activeFile={this.state.file} />
                     </Sider>
                     <Content>
+                        <Affix offsetTop={1} affixStyle={{top:0}}>
+                            <Tabs
+                                defaultActiveTab={this.state.activeFile}
+                                onChange={this.clickFileX}
+                                activeTab={this.state.file}
+                                editable
+                                addButton={<></>}
+                                overflow={'scroll'}
+                                onDeleteTab={this.closeFile}
+                                style={{background:'white'}}
+                            >
+                                {this.state.openFiles.map((file) => {
+                                    return <TabPane key={file} title={file} closable></TabPane>
+                                })}
+                            </Tabs>
+                        </Affix>
                         <div className="content">
-                            <Markdown mode={this.state.mode} file={this.state.activeFile}  ref={this.markdown}  switch={this.clickFileX}/>
+                            <MDView value={this.state.value} sep={this.state.sep} file={this.state.file} />
                         </div>
                     </Content>
                 </Layout>
-            </div>
+            </div >
         )
     }
 }
