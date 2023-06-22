@@ -11,7 +11,7 @@ import gfm from '@bytemd/plugin-gfm'
 import math from '@bytemd/plugin-math'
 import image from '../plugins/image'
 import copyCode from '../plugins/code-copy'
-
+import externalLink from '../plugins/external-link'
 import mediumZoom from '@bytemd/plugin-medium-zoom'
 import gemoji from '@bytemd/plugin-gemoji'
 import frontmatter from '@bytemd/plugin-frontmatter'
@@ -22,7 +22,7 @@ import { Modal, Message } from '@arco-design/web-react';
 import { md5 } from '@/util/common';
 
 const plugins = [
-    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), copyCode(),
+    gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), copyCode(), mediumZoom(), externalLink()
 ]
 
 const getUploadConfig = async (activeFile) => {
@@ -164,7 +164,7 @@ const Markdown = React.forwardRef((props, ref) => {
     return <Editor
         value={value}
         plugins={[image(activeFile, sep), ...plugins]}
-        mode="split"
+        mode="auto"
         uploadImages={doUploadImages}
         onChange={(val) => {
             setValue(val)

@@ -11,35 +11,12 @@ img {
 }
 
 #app .content {
-  width: 85%;
   margin: 5px auto;
 }
 
-#app .content-title {
-  padding-left: 10px;
-  background-color: #CCCCCC;
-}
 
 #app .content .bytemd {
   height: 98vh;
-}
-
-.bytemd-editor .CodeMirror .CodeMirror-lines {
-  max-width: 999999px !important;
-}
-
-.bytemd-preview .markdown-body {
-  max-width: 999999px !important;
-}
-
-.bytemd-editor {
-  width: 100% !important;
-}
-
-.bytemd-status-right label,
-.bytemd-toolbar-right,
-.bytemd-preview {
-  display: none !important;
 }
 
 .copy-btn {
@@ -47,8 +24,4 @@ img {
   top:0;
   right: 0;
   padding: 5px 10px;
-}
-
-.markdown-body pre {
-  position: relative;
 }

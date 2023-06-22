@@ -67,8 +67,8 @@
             }
         },
         "security": {
-            "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost",
-            "devCsp": "default-src 'self'; img-src 'self' asset: http://asset.localhost"
+            "csp": "default-src 'self'; img-src 'self' asset: http://asset.localhost; style-src 'self' 'unsafe-inline'",
+            "devCsp": "default-src 'self'; img-src 'self' asset: http://asset.localhost; style-src 'self' 'unsafe-inline'"
         },
         "updater": {
             "active": false

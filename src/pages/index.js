@@ -107,7 +107,7 @@ class App extends React.Component {
                     <Sider
                         resizeDirections={['right']}
                         style={{
-                            minWidth: '20%',
+                            minWidth: '10%',
                             maxWidth: '40%',
                             height: '100vh',
                             overflow: 'scroll',
@@ -120,7 +120,7 @@ class App extends React.Component {
                     </Sider>
                     <Content>
                         <div className="content">
-                            <Markdown mode={this.state.mode} file={this.state.activeFile}  ref={this.markdown}/>
+                            <Markdown mode={this.state.mode} file={this.state.activeFile}  ref={this.markdown}  switch={this.clickFileX}/>
                         </div>
                     </Content>
                 </Layout>

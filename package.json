@@ -23,6 +23,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
+    "rehype-external-links": "^2.1.0",
     "rehype-urls": "^1.1.1",
     "url": "^0.11.0",
     "vditor": "^3.8.17",
