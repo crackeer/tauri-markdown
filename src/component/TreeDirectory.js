@@ -39,9 +39,7 @@ const TreeDirectory = React.forwardRef((props, ref) => {
 
     var initData = async (dir) => {
         let children = await getSubDir(dir)
-        console.log(children)
         let folder = await cache.getOpenFolder(dir)
-        
         setExpandKeys(folder)
         setTreeData([
             {
@@ -74,7 +72,6 @@ const TreeDirectory = React.forwardRef((props, ref) => {
         selectedKeys={[props.file]}
         treeData={treeData}
         onSelect={(value, info) => {
-            console.log(value, info.node.props.dataRef.isLeaf)
             if (info.node.props.dataRef.isLeaf) {
                 props.clickFile(info.node.props.dataRef.key)
             }

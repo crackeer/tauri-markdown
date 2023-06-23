@@ -16,10 +16,8 @@ import mediumZoom from '@bytemd/plugin-medium-zoom'
 import gemoji from '@bytemd/plugin-gemoji'
 import frontmatter from '@bytemd/plugin-frontmatter'
 import { Editor, Viewer } from '@bytemd/react'
-import { uploadFile, readFile, writeFile } from '../util/invoke'
+import { uploadFile } from '../util/invoke'
 import dayjs from 'dayjs'
-import { Modal, Message } from '@arco-design/web-react';
-import { md5 } from '@/util/common';
 
 const plugins = [
     gfm(), highlight(), mermaid(), math(), gemoji(), frontmatter(), mediumZoom(), externalLink()

@@ -1,23 +1,15 @@
 import { writeText, readText } from '@tauri-apps/api/clipboard';
 import {  Message } from '@arco-design/web-react';
 
-export default function copyCode(options) {
-    function createElement(tag, innerHTML, className, id) {
-        const element = document.createElement(tag)
-        element.className = className
-        element.innerHTML = innerHTML
-        return element
-    }
+export default function copyCode() {
     function copyCode(node) {
-        node.onclick = async () => {
+        node.ondblclick = async () => {
+            console.log(node)
             let str = '';
             // @ts-ignore
-            node.parentNode.children[0].childNodes.forEach(element => {
+            node.children[0].childNodes.forEach(element => {
                 str = str + element.textContent
             })
-            if (options?.copyright) {
-                str = str + options.copyright
-            }
             await writeText(str)
             Message.success("复制成功")
         }
@@ -27,11 +19,9 @@ export default function copyCode(options) {
         viewerEffect({ markdownBody }) {
             (async (markdownBody) => {
                 const els = markdownBody.querySelectorAll('pre')
-                els.forEach(el => {                    
-                    const operateBtn = createElement('button', 'copy', 'copy-btn')
-                    copyCode(operateBtn)
-                    el.appendChild(operateBtn)
-
+                els.forEach(el => {     
+                    el.style.cursor = 'pointer'
+                    copyCode(el)
                 });
             })(markdownBody)
         }

@@ -17,9 +17,16 @@ img {
   padding: 5px 10px;
 }
 
-.arco-modal-content {
+#edit-modal .arco-modal-content {
   padding: 0!important;
+}
+
+.arco-modal-title {
+  text-align: left!important;
 }
 .bytemd {
   height: calc(80vh - 28px)!important;
+}
+.md-view-content {
+  padding: 10px 7.5% 50px;
 }

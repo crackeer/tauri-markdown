@@ -45,12 +45,9 @@ class App extends React.Component {
         })
     }
     openDirectory = async () => {
-        const { homeDir } = await import('@tauri-apps/api/path')
-        const homeDirPath = await homeDir();
         let selected = await open({
             directory: true,
             multiple: false,
-            defaultPath: homeDirPath,
         });
         if (selected == null || selected.length < 1) {
             return
@@ -197,7 +194,7 @@ class App extends React.Component {
                             </Tabs>
                         </Affix>
                         {
-                            this.state.file.length > 0 ? <div className="content">
+                            this.state.file.length > 0 ? <div className="md-view-content">
                                 <MDView value={this.state.value} sep={this.state.sep} file={this.state.file} />
                                 <div style={{ right: '50px', position: 'fixed', bottom: '50px' }}>
                                     <Button type='primary' size='small' shape='round' icon={<IconEdit />} onClick={this.showEdit}></Button>
@@ -209,7 +206,7 @@ class App extends React.Component {
                             this.setState({ visible: false });
                         }} onOk={this.saveFile} style={{ width: '90%', height: '90%' }} title={
                             <div style={{ textAlign: 'left' }}>{this.state.file}</div>
-                        }>
+                        } id="edit-modal">
                             <MDEdit value={this.state.editValue} sep={this.state.sep} file={this.state.file} onChange={
                                 (value) => {
                                     this.setState({ editValue: value });
