@@ -1,6 +1,6 @@
 import ReactDOM from 'react-dom';
 import React from 'react';
-import { Modal, Input } from '@arco-design/web-react';
+import { Modal, Input, Tag } from '@arco-design/web-react';
 import { createFile, deleteFile, createDir, deleteFolder, renameFile } from '../util/invoke'
 function showEdit(node, action, callback) {
     console.log(node, action)
@@ -56,8 +56,10 @@ const RenameX = (props) => {
         }
         hideEdit()
     }
-    return <Modal title={'修改文件名:' + props.node._key} visible={true} okText="确认" onOk={doUpdateName} onCancel={hideEdit} width="60%" bodyStyle={{ padding: '1px 10px' }}>
-        <Input value={name} onChange={setName} />
+    return <Modal title={<div style={{ textAlign: 'left' }}>{'修改文件名'}</div>} visible={true} okText="确认" onOk={doUpdateName} onCancel={hideEdit} width="70%" bodyStyle={{ padding: '1px 10px' }}>
+        <div style={{ padding: '20px' }}>
+            <Input value={name} onChange={setName} />
+        </div>
     </Modal>
 }
 
@@ -75,8 +77,11 @@ const NewFile = (props) => {
         }
         hideEdit()
     }
-    return <Modal title={'新建文件'} visible={true} okText="确认" onOk={doCreate} onCancel={hideEdit} width="60%" bodyStyle={{ padding: '1px 10px' }}>
-        <Input value={name} onChange={setName} />
+    return <Modal title={<div style={{ textAlign: 'left' }}>新建文件</div>} visible={true} okText="确认" onOk={doCreate} onCancel={hideEdit} width="70%" bodyStyle={{ padding: '1px 10px' }}>
+        <div style={{ padding: '20px' }}>
+            <Input value={name} onChange={setName} />
+        </div>
+
     </Modal>
 }
 
@@ -91,8 +96,11 @@ const NewFolder = (props) => {
         }
         hideEdit()
     }
-    return <Modal title={'新建文件'} visible={true} okText="确认" onOk={doCreate} onCancel={hideEdit} width="60%" bodyStyle={{ padding: '1px 10px' }}>
-        <Input value={name} onChange={setName} />
+    return <Modal title={<div style={{ textAlign: 'left' }}>新建文件夹</div>} visible={true} okText="确认" onOk={doCreate} onCancel={hideEdit} width="70%" bodyStyle={{ padding: '1px 10px' }}>
+        <div style={{ padding: '20px' }}>
+            <Input value={name} onChange={setName} />
+        </div>
+
     </Modal>
 }
 
@@ -108,9 +116,13 @@ const DeleteFile = (props) => {
         }
         hideEdit()
     }
-    return <Modal title={'删除确认'} visible={true} okText="确认" onOk={doDelete} onCancel={hideEdit} width="60%" bodyStyle={{ padding: '1px 10px' }}>
-        <p>是否删除该文件（夹）{props.node._key}，删除之后无法恢复？
-        </p>
+    return <Modal title={<div style={{ textAlign: 'left' }}>删除确认</div>} visible={true} okText="确认" onOk={doDelete} onCancel={hideEdit} width="70%" bodyStyle={{ padding: '1px 10px' }}>
+        <div style={{ padding: '20px' }}>
+            是否删除该文件（夹)，删除之后无法恢复？
+            <p>
+                <Tag size='large'>{props.node._key}</Tag>
+            </p>
+        </div>
     </Modal>
 }
 

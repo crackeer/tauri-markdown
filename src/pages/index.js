@@ -71,13 +71,13 @@ class App extends React.Component {
 
         if (this.state.openFiles.length < 1) {
             await this.setState({
-                file : ''
+                file: ''
             })
             return
         }
 
         if (key == this.state.file) {
-            if(lastOne) {
+            if (lastOne) {
                 await this.setState({
                     file: this.state.openFiles[this.state.openFiles.length - 1]
                 })
@@ -88,7 +88,7 @@ class App extends React.Component {
             }
             this.loadFileContent()
         }
-        
+
     };
     loadFileContent = async () => {
         if (this.state.file.length < 1) {
@@ -165,7 +165,7 @@ class App extends React.Component {
                         resizeDirections={['right']}
                         style={{
                             minWidth: '15%',
-                            width:'20%',
+                            width: '20%',
                             maxWidth: '40%',
                             height: '100vh',
                             overflow: 'scroll',
@@ -173,9 +173,9 @@ class App extends React.Component {
                             paddingLeft: '10px'
                         }}
                         size="small"
-                       onChange={(value) => {
-                          console.log(value)
-                       }}
+                        onChange={(value) => {
+                            console.log(value)
+                        }}
                     >
                         <TreeDirectory rootDir={this.state.rootDir} clickFile={this.clickFileX} file={this.state.file} />
                     </Sider>
@@ -207,7 +207,9 @@ class App extends React.Component {
 
                         <Modal visible={this.state.visible} onCancel={() => {
                             this.setState({ visible: false });
-                        }} onOk={this.saveFile} style={{ width: '90%', height: '90%' }} title={this.state.file}>
+                        }} onOk={this.saveFile} style={{ width: '90%', height: '90%' }} title={
+                            <div style={{ textAlign: 'left' }}>{this.state.file}</div>
+                        }>
                             <MDEdit value={this.state.editValue} sep={this.state.sep} file={this.state.file} onChange={
                                 (value) => {
                                     this.setState({ editValue: value });

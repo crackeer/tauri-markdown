@@ -2,9 +2,10 @@ import React from 'react';
 import { Tree } from '@arco-design/web-react';
 import { simpleReadDir } from '../util/invoke'
 import { sortFileList } from '@/util/common';
-import { IconDown } from '@arco-design/web-react/icon';
+import { IconDown, IconDriveFile, IconPlus, IconUp} from '@arco-design/web-react/icon';
 import { Dropdown, Menu, Grid } from '@arco-design/web-react';
 import { showEdit, hideEdit } from '../plugins/edit'
+
 import cache from '@/util/cache';
 const getSubDir = async (dir) => {
     let fileList = await simpleReadDir(dir, ".md")
@@ -38,9 +39,18 @@ const TreeDirectory = React.forwardRef((props, ref) => {
 
     var initData = async (dir) => {
         let children = await getSubDir(dir)
+        console.log(children)
         let folder = await cache.getOpenFolder(dir)
+        
         setExpandKeys(folder)
-        setTreeData(children)
+        setTreeData([
+            {
+                title : dir,
+                key : dir,
+                isLeaf : false,
+                children : children
+            }
+        ])
     }
     const reloadDir = async (treeNode) => {
         treeNode.props.dataRef.children = await getSubDir(treeNode.key)
@@ -64,16 +74,17 @@ const TreeDirectory = React.forwardRef((props, ref) => {
         selectedKeys={[props.file]}
         treeData={treeData}
         onSelect={(value, info) => {
-            if (info.node.props.isLeaf) {
+            console.log(value, info.node.props.dataRef.isLeaf)
+            if (info.node.props.dataRef.isLeaf) {
                 props.clickFile(info.node.props.dataRef.key)
             }
         }}
         expandedKeys={expandKeys}
         onExpand={onExpandFolder}
-        size='small'
+        size='default'
         actionOnClick={['expand', 'select']}
         renderTitle={(node) => {
-            const { isLeaf, title } = node
+            const {  title } = node
             return <Dropdown
                 trigger='contextMenu'
                 position='bl'
@@ -84,10 +95,10 @@ const TreeDirectory = React.forwardRef((props, ref) => {
                             e.stopPropagation()
                         }}>重命名</Menu.Item>
                         <Menu.Item key='2' onClick={(e) => {
-                                showEdit(node, 'delete_file', reload)
-                                e.stopPropagation()
-                            }}>删除</Menu.Item>
-                        {!isLeaf ? <>
+                            showEdit(node, 'delete_file', reload)
+                            e.stopPropagation()
+                        }}>删除</Menu.Item>
+                        {!node.dataRef.isLeaf ? <>
                             <Menu.Item key='new_folder' onClick={(e) => {
                                 showEdit(node, 'new_folder', reload)
                                 e.stopPropagation()

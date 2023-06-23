@@ -1,7 +1,8 @@
+import { emit } from '@tauri-apps/api/event';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 var urls = require('rehype-urls')
 const path = require('path');
-import { emit } from '@tauri-apps/api/event';
+
 
 export default function localImageSrc(currentFile, sep) {
     return {
